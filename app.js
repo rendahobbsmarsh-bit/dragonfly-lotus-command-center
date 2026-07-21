@@ -179,3 +179,56 @@ renderHealth();
 renderBills();
 clock();
 setInterval(clock,1000);
+
+
+// Flight Operations autosave
+const FLIGHT_OPERATIONS_KEY = "dragonflyLotusFlightOperations";
+
+const flightOperationIds = [
+  "opsFlightNumber",
+  "opsRoute",
+  "opsAircraft",
+  "opsPosition",
+  "opsLayover",
+  "opsVanTime",
+  "opsHotel",
+  "opsCrewNotes"
+];
+
+function initializeFlightOperations() {
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(FLIGHT_OPERATIONS_KEY) || "{}"
+    );
+  } catch (error) {
+    console.warn("Flight Operations could not be loaded.", error);
+  }
+
+  flightOperationIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (!field) return;
+
+    field.value = saved[id] || "";
+
+    const save = () => {
+      const current = {};
+
+      flightOperationIds.forEach(fieldId => {
+        const currentField = document.getElementById(fieldId);
+        current[fieldId] = currentField ? currentField.value : "";
+      });
+
+      localStorage.setItem(
+        FLIGHT_OPERATIONS_KEY,
+        JSON.stringify(current)
+      );
+    };
+
+    field.addEventListener("input", save);
+    field.addEventListener("change", save);
+  });
+}
+
+window.addEventListener("DOMContentLoaded", initializeFlightOperations);

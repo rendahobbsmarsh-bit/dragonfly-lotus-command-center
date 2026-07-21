@@ -173,7 +173,61 @@
       </div>
     </section>
 
-  </main>
+  
+<section class="card wide flight-operations" id="flightOperations">
+  <div class="flight-heading">
+    <div>
+      <small>FLIGHT ATTENDANT MODE</small>
+      <h2>Flight Operations</h2>
+    </div>
+    <span class="flight-status">READY FOR DEPARTURE</span>
+  </div>
+
+  <div class="flight-operations-grid">
+    <label>
+      Flight Number
+      <input id="opsFlightNumber" placeholder="Example: WN 1842">
+    </label>
+
+    <label>
+      Route
+      <input id="opsRoute" placeholder="Example: DAL → BWI">
+    </label>
+
+    <label>
+      Aircraft
+      <input id="opsAircraft" placeholder="Example: 737-800">
+    </label>
+
+    <label>
+      Position
+      <input id="opsPosition" placeholder="Example: A, B or C">
+    </label>
+
+    <label>
+      Layover
+      <input id="opsLayover" placeholder="Example: PHL — 28 hours">
+    </label>
+
+    <label>
+      Van Time
+      <input id="opsVanTime" type="time">
+    </label>
+
+    <label class="flight-span-two">
+      Hotel
+      <input id="opsHotel" placeholder="Hotel name and location">
+    </label>
+
+    <label class="flight-span-two">
+      Crew Notes
+      <textarea id="opsCrewNotes"
+        placeholder="Crew names, cabin notes, meals, transportation and reminders..."></textarea>
+    </label>
+  </div>
+</section>
+
+</main>
 
   <footer>✦ DragonFly &nbsp; • &nbsp; 🪷 Rooted in calm. Ready for flight.</footer>
   <script src="app.js"></script>
