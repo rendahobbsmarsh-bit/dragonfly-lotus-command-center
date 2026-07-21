@@ -231,7 +231,11 @@ function initializeFlightOperations() {
   });
 }
 
-window.addEventListener("DOMContentLoaded", initializeFlightOperations);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeFlightOperations, { once: true });
+} else {
+  initializeFlightOperations();
+}
 
 
 // Health Dashboard autosave
@@ -331,4 +335,8 @@ function initializeHealthDashboard() {
   updateHealthProgress();
 }
 
-window.addEventListener("DOMContentLoaded", initializeHealthDashboard);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeHealthDashboard, { once: true });
+} else {
+  initializeHealthDashboard();
+}
