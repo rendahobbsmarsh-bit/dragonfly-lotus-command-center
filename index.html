@@ -286,6 +286,60 @@
   </div>
 </section>
 
+
+<section class="card wide countdown-center" id="countdownCenter">
+  <div class="countdown-heading">
+    <div>
+      <small>DATES ON THE RADAR</small>
+      <h2>Countdown Center</h2>
+    </div>
+    <span class="countdown-status" id="countdownStatus">0 ACTIVE</span>
+  </div>
+
+  <form class="countdown-form" id="countdownForm">
+    <label>
+      Event or Deadline
+      <input
+        id="countdownName"
+        type="text"
+        placeholder="Example: Vacation"
+        required
+      >
+    </label>
+
+    <label>
+      Date
+      <input
+        id="countdownDate"
+        type="date"
+        required
+      >
+    </label>
+
+    <label>
+      Category
+      <select id="countdownCategory">
+        <option value="Personal">Personal</option>
+        <option value="Flight">Flight</option>
+        <option value="Home">Home</option>
+        <option value="Money">Money</option>
+        <option value="Health">Health</option>
+        <option value="Work">Work</option>
+      </select>
+    </label>
+
+    <button class="countdown-add-button" type="submit">
+      Add Countdown
+    </button>
+  </form>
+
+  <div class="countdown-list" id="countdownList"></div>
+
+  <p class="countdown-empty" id="countdownEmpty">
+    No countdowns yet. Add the next important date on your radar.
+  </p>
+</section>
+
 </main>
 
   <footer>✦ DragonFly &nbsp; • &nbsp; 🪷 Rooted in calm. Ready for flight.</footer>

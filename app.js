@@ -340,3 +340,229 @@ if (document.readyState === "loading") {
 } else {
   initializeHealthDashboard();
 }
+
+
+// Countdown Center
+const COUNTDOWN_STORAGE_KEY = "dragonflyLotusCountdowns";
+
+function loadCountdowns() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(COUNTDOWN_STORAGE_KEY) || "[]"
+    );
+
+    return Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    console.warn("Countdowns could not be loaded.", error);
+    return [];
+  }
+}
+
+let countdownItems = loadCountdowns();
+
+function saveCountdowns() {
+  localStorage.setItem(
+    COUNTDOWN_STORAGE_KEY,
+    JSON.stringify(countdownItems)
+  );
+}
+
+function localDateFromInput(dateValue) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function startOfToday() {
+  const today = new Date();
+  return new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+}
+
+function calculateDaysRemaining(dateValue) {
+  const target = localDateFromInput(dateValue);
+  const today = startOfToday();
+  return Math.round((target - today) / 86400000);
+}
+
+function formatCountdownDate(dateValue) {
+  return localDateFromInput(dateValue).toLocaleDateString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function countdownLabel(days) {
+  if (days === 0) {
+    return {
+      number: "TODAY",
+      label: "ARRIVED"
+    };
+  }
+
+  if (days === 1) {
+    return {
+      number: "1",
+      label: "DAY"
+    };
+  }
+
+  if (days > 1) {
+    return {
+      number: String(days),
+      label: "DAYS"
+    };
+  }
+
+  const elapsed = Math.abs(days);
+
+  return {
+    number: String(elapsed),
+    label: elapsed === 1 ? "DAY AGO" : "DAYS AGO"
+  };
+}
+
+function renderCountdowns() {
+  const list = document.getElementById("countdownList");
+  const empty = document.getElementById("countdownEmpty");
+  const status = document.getElementById("countdownStatus");
+
+  if (!list || !empty || !status) return;
+
+  list.innerHTML = "";
+
+  countdownItems.sort((a, b) => {
+    return a.date.localeCompare(b.date);
+  });
+
+  const activeCount = countdownItems.filter(item => {
+    return calculateDaysRemaining(item.date) >= 0;
+  }).length;
+
+  status.textContent =
+    `${activeCount} ACTIVE`;
+
+  empty.hidden = countdownItems.length > 0;
+
+  countdownItems.forEach(item => {
+    const days = calculateDaysRemaining(item.date);
+    const display = countdownLabel(days);
+
+    const card = document.createElement("article");
+    card.className = "countdown-item";
+
+    if (days === 0) {
+      card.classList.add("is-today");
+    }
+
+    if (days < 0) {
+      card.classList.add("is-past");
+    }
+
+    const main = document.createElement("div");
+    main.className = "countdown-item-main";
+
+    const name = document.createElement("h3");
+    name.className = "countdown-item-name";
+    name.textContent = item.name;
+
+    const meta = document.createElement("div");
+    meta.className = "countdown-item-meta";
+
+    const date = document.createElement("span");
+    date.textContent = formatCountdownDate(item.date);
+
+    const category = document.createElement("span");
+    category.className = "countdown-category";
+    category.textContent = item.category;
+
+    meta.append(date, category);
+    main.append(name, meta);
+
+    const daysBlock = document.createElement("div");
+    daysBlock.className = "countdown-days";
+
+    const number = document.createElement("strong");
+    number.textContent = display.number;
+
+    const label = document.createElement("span");
+    label.textContent = display.label;
+
+    daysBlock.append(number, label);
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "countdown-delete";
+    deleteButton.type = "button";
+    deleteButton.setAttribute(
+      "aria-label",
+      `Delete ${item.name}`
+    );
+    deleteButton.textContent = "✕";
+
+    deleteButton.addEventListener("click", () => {
+      countdownItems = countdownItems.filter(
+        countdown => countdown.id !== item.id
+      );
+
+      saveCountdowns();
+      renderCountdowns();
+    });
+
+    card.append(main, daysBlock, deleteButton);
+    list.append(card);
+  });
+}
+
+function initializeCountdownCenter() {
+  const form = document.getElementById("countdownForm");
+  const nameField = document.getElementById("countdownName");
+  const dateField = document.getElementById("countdownDate");
+  const categoryField = document.getElementById("countdownCategory");
+
+  if (!form || !nameField || !dateField || !categoryField) {
+    return;
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const name = nameField.value.trim();
+    const date = dateField.value;
+    const category = categoryField.value;
+
+    if (!name || !date) return;
+
+    countdownItems.push({
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random()}`,
+      name,
+      date,
+      category
+    });
+
+    saveCountdowns();
+    renderCountdowns();
+
+    form.reset();
+    categoryField.value = "Personal";
+    nameField.focus();
+  });
+
+  renderCountdowns();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeCountdownCenter,
+    { once: true }
+  );
+} else {
+  initializeCountdownCenter();
+}
