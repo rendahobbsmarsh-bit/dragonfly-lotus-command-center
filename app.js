@@ -166,6 +166,13 @@ $("#billForm").onsubmit=e=>{
  e.target.reset(); save(); renderBills();
 };
 
+
+bind("#appointmentPurpose","appointmentPurpose");
+bind("#appointmentQuestions","appointmentQuestions");
+bind("#appointmentNotes","appointmentNotes");
+bind("#followUpDate","followUpDate","change");
+bind("#appointmentNextStep","appointmentNextStep");
+
 setMode(state.mode);
 renderTasks();
 renderHealth();

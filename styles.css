@@ -86,3 +86,29 @@ footer { padding:5px 24px 28px; text-align:center; color:var(--muted); }
   main { grid-template-columns:1fr; }
   .fields,.bill-form { grid-template-columns:1fr; }
 }
+
+/* Quick Capture */
+.quick-capture {
+  grid-column: 1 / -1;
+}
+
+.helper-text {
+  margin-top: -4px;
+  margin-bottom: 18px;
+}
+
+.quick-capture textarea {
+  min-height: 105px;
+}
+
+.quick-fields {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 12px;
+}
+
+@media(max-width:800px) {
+  .quick-fields {
+    grid-template-columns: 1fr;
+  }
+}
