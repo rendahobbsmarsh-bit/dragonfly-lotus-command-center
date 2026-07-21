@@ -767,3 +767,239 @@ if (document.readyState === "loading") {
 } else {
   initializeCaptainsBriefing();
 }
+
+
+// Captain's Recommendations
+function recommendationsReadStorage(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function recommendationsNumber(...values) {
+  for (const value of values) {
+    const number = Number(value);
+    if (Number.isFinite(number)) return number;
+  }
+  return 0;
+}
+
+function recommendationsDaysUntil(dateValue) {
+  if (!dateValue) return null;
+
+  const parts = String(dateValue).split("-").map(Number);
+  if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) {
+    return null;
+  }
+
+  const target = new Date(parts[0], parts[1] - 1, parts[2]);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  return Math.round((target - today) / 86400000);
+}
+
+function recommendationCard(icon, title, detail, tone = "") {
+  return `
+    <article class="recommendation-item ${tone}">
+      <span class="recommendation-icon">${icon}</span>
+      <div>
+        <strong>${title}</strong>
+        <p>${detail}</p>
+      </div>
+    </article>
+  `;
+}
+
+function updateCaptainRecommendations() {
+  const list = document.getElementById("recommendationsList");
+  const status = document.getElementById("recommendationsStatus");
+  if (!list) return;
+
+  const state = recommendationsReadStorage("dragonfly-lotus-v1", {});
+  const health = recommendationsReadStorage("dragonflyLotusHealthDashboard", {});
+  const flight = recommendationsReadStorage("dragonflyLotusFlightOperations", {});
+  const countdowns = recommendationsReadStorage("dragonflyLotusCountdowns", []);
+  const bliss = recommendationsReadStorage("dragonflyLotusBliss", {});
+
+  const recommendations = [];
+  const mode = String(state.mode || "home").toLowerCase();
+
+  const water = Math.max(
+    0,
+    recommendationsNumber(
+      health.waterValue,
+      health.water,
+      state.water
+    )
+  );
+
+  const protein = Math.max(
+    0,
+    recommendationsNumber(
+      health.proteinValue,
+      health.protein,
+      state.protein
+    )
+  );
+
+  const exercise = Boolean(
+    health.exerciseComplete ??
+    health.exercise ??
+    state.exercise
+  );
+
+  if (water < 64) {
+    recommendations.push({
+      icon: "💧",
+      title: "Bring water forward",
+      detail: `You are at ${water} of 128 oz. Your next simple move is one full bottle or two airplane waters.`,
+      tone: "priority"
+    });
+  } else if (water < 128) {
+    recommendations.push({
+      icon: "💧",
+      title: "Water goal is within reach",
+      detail: `${128 - water} oz remain. Keep a bottle visible and finish the next serving before changing tasks.`
+    });
+  }
+
+  if (protein < 85) {
+    recommendations.push({
+      icon: "🥤",
+      title: "Anchor the next meal with protein",
+      detail: `You are at ${protein} of 170 g. Choose one dependable protein source before adding extras.`,
+      tone: "priority"
+    });
+  } else if (protein < 170) {
+    recommendations.push({
+      icon: "🥤",
+      title: "Protect your protein momentum",
+      detail: `${170 - protein} g remain. Plan one protein-forward meal or Devotion serving.`
+    });
+  }
+
+  if (!exercise) {
+    recommendations.push({
+      icon: "💪",
+      title: mode === "turbulence" ? "Choose gentle movement" : "Put movement on the flight path",
+      detail: mode === "turbulence"
+        ? "A short stretch, mobility session or recovery walk is enough today."
+        : "A focused workout, walk or mobility session will complete this instrument."
+    });
+  }
+
+  const activeCountdowns = Array.isArray(countdowns)
+    ? countdowns
+        .map(item => ({
+          ...item,
+          days: recommendationsDaysUntil(item.date)
+        }))
+        .filter(item => item.days !== null && item.days >= 0)
+        .sort((a, b) => a.days - b.days)
+    : [];
+
+  const nextCountdown = activeCountdowns[0];
+  if (nextCountdown && nextCountdown.days <= 14) {
+    const name = nextCountdown.name || nextCountdown.event || "Your next event";
+    recommendations.push({
+      icon: "📅",
+      title: nextCountdown.days === 0 ? `${name} is today` : `${name} is approaching`,
+      detail: nextCountdown.days === 0
+        ? "Review the final details and protect enough transition time."
+        : `${nextCountdown.days} day${nextCountdown.days === 1 ? "" : "s"} remain. Choose one preparation step for today.`,
+      tone: nextCountdown.days <= 3 ? "priority" : ""
+    });
+  }
+
+  const blissAreas = [
+    ["blissHomeDone", "Home"],
+    ["blissGardenDone", "Garden"],
+    ["blissPhotographyDone", "Photography"],
+    ["blissMealPrepDone", "Meal prep"],
+    ["blissLaundryDone", "Laundry"],
+    ["blissWorkoutDone", "Workout"]
+  ];
+
+  const incompleteBliss = blissAreas.filter(([id]) => !Boolean(bliss[id]));
+  const completedBliss = blissAreas.length - incompleteBliss.length;
+
+  if (mode === "home" && incompleteBliss.length > 0) {
+    const focus = incompleteBliss[0][1];
+    recommendations.push({
+      icon: "🌿",
+      title: `A gentle ${focus.toLowerCase()} win fits Home Mode`,
+      detail: `${completedBliss} of 6 Dragonfly Bliss areas are complete. One small ${focus.toLowerCase()} action is enough.`
+    });
+  }
+
+  const hasFlight =
+    Boolean((flight.opsFlightNumber || "").trim()) ||
+    Boolean((flight.opsRoute || "").trim());
+
+  if (mode === "flight" && !hasFlight) {
+    recommendations.push({
+      icon: "✈️",
+      title: "Complete the flight picture",
+      detail: "Add the flight number or route so the briefing can carry your operational details.",
+      tone: "priority"
+    });
+  }
+
+  if (!(state.mission || "").trim()) {
+    recommendations.push({
+      icon: "🎯",
+      title: "Name one mission",
+      detail: "Choose the single outcome that would make today feel intentionally flown."
+    });
+  }
+
+  const visible = recommendations.slice(0, 4);
+
+  if (visible.length === 0) {
+    visible.push({
+      icon: "✓",
+      title: "All primary systems are steady",
+      detail: "Your core goals are in good shape. Protect your pace and enjoy the day you built.",
+      tone: "success"
+    });
+  }
+
+  list.innerHTML = visible
+    .map(item => recommendationCard(item.icon, item.title, item.detail, item.tone))
+    .join("");
+
+  if (status) {
+    const priorityCount = visible.filter(item => item.tone === "priority").length;
+    status.textContent = priorityCount
+      ? `${priorityCount} PRIORITY ${priorityCount === 1 ? "ITEM" : "ITEMS"}`
+      : "STEADY GUIDANCE";
+  }
+}
+
+function initializeCaptainRecommendations() {
+  updateCaptainRecommendations();
+
+  document.addEventListener("input", () => {
+    setTimeout(updateCaptainRecommendations, 0);
+  });
+
+  document.addEventListener("change", () => {
+    setTimeout(updateCaptainRecommendations, 0);
+  });
+
+  window.addEventListener("storage", updateCaptainRecommendations);
+  setInterval(updateCaptainRecommendations, 60000);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeCaptainRecommendations,
+    { once: true }
+  );
+} else {
+  initializeCaptainRecommendations();
+}
