@@ -566,3 +566,120 @@ if (document.readyState === "loading") {
 } else {
   initializeCountdownCenter();
 }
+
+
+// Dragonfly Bliss autosave
+const BLISS_STORAGE_KEY = "dragonflyLotusBliss";
+
+const blissFieldIds = [
+  "blissHome",
+  "blissHomeDone",
+  "blissGarden",
+  "blissGardenDone",
+  "blissPhotography",
+  "blissPhotographyDone",
+  "blissMealPrep",
+  "blissMealPrepDone",
+  "blissLaundry",
+  "blissLaundryDone",
+  "blissWorkout",
+  "blissWorkoutDone",
+  "blissNotes"
+];
+
+const blissCompletionIds = [
+  "blissHomeDone",
+  "blissGardenDone",
+  "blissPhotographyDone",
+  "blissMealPrepDone",
+  "blissLaundryDone",
+  "blissWorkoutDone"
+];
+
+function loadDragonflyBliss() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(BLISS_STORAGE_KEY) || "{}"
+    );
+  } catch (error) {
+    console.warn("Dragonfly Bliss could not be loaded.", error);
+    return {};
+  }
+}
+
+function updateDragonflyBlissStatus() {
+  const status = document.getElementById("blissStatus");
+
+  const completed = blissCompletionIds.filter(id => {
+    return document.getElementById(id)?.checked;
+  }).length;
+
+  if (status) {
+    status.textContent = `${completed} OF 6 COMPLETE`;
+  }
+
+  blissCompletionIds.forEach(id => {
+    const checkbox = document.getElementById(id);
+    const card = checkbox?.closest(".bliss-item");
+
+    if (card) {
+      card.classList.toggle(
+        "is-complete",
+        Boolean(checkbox.checked)
+      );
+    }
+  });
+}
+
+function saveDragonflyBliss() {
+  const saved = {};
+
+  blissFieldIds.forEach(id => {
+    const field = document.getElementById(id);
+
+    if (!field) return;
+
+    saved[id] =
+      field.type === "checkbox"
+        ? field.checked
+        : field.value;
+  });
+
+  localStorage.setItem(
+    BLISS_STORAGE_KEY,
+    JSON.stringify(saved)
+  );
+
+  updateDragonflyBlissStatus();
+}
+
+function initializeDragonflyBliss() {
+  const saved = loadDragonflyBliss();
+
+  blissFieldIds.forEach(id => {
+    const field = document.getElementById(id);
+
+    if (!field) return;
+
+    if (field.type === "checkbox") {
+      field.checked = Boolean(saved[id]);
+    } else {
+      field.value = saved[id] || "";
+    }
+
+    field.addEventListener("input", saveDragonflyBliss);
+    field.addEventListener("change", saveDragonflyBliss);
+  });
+
+  updateDragonflyBlissStatus();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeDragonflyBliss,
+    { once: true }
+  );
+} else {
+  initializeDragonflyBliss();
+}

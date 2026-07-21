@@ -477,3 +477,143 @@ footer { padding:5px 24px 28px; text-align:center; color:var(--muted); }
     justify-self: end;
   }
 }
+
+
+/* Dragonfly Bliss */
+.bliss-center {
+  grid-column: 1 / -1;
+}
+
+.bliss-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.bliss-subtitle {
+  margin: 7px 0 0;
+  color: #a9c2c4;
+}
+
+.bliss-status {
+  padding: 9px 14px;
+  border: 1px solid rgba(89, 199, 190, 0.42);
+  border-radius: 999px;
+  background: rgba(89, 199, 190, 0.11);
+  color: #8ce1da;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.bliss-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.bliss-item {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.035);
+}
+
+.bliss-item-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bliss-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(226, 183, 104, 0.28);
+  border-radius: 14px;
+  background: rgba(226, 183, 104, 0.08);
+  font-size: 1.35rem;
+}
+
+.bliss-item h3 {
+  margin: 0;
+  color: #f6f2e8;
+}
+
+.bliss-item-heading small {
+  display: block;
+  margin-top: 3px;
+  color: #8fa9ab;
+  letter-spacing: 0;
+}
+
+.bliss-item textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.bliss-complete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding: 11px 12px;
+  border: 1px solid rgba(89, 199, 190, 0.22);
+  border-radius: 12px;
+  background: rgba(89, 199, 190, 0.055);
+  cursor: pointer;
+}
+
+.bliss-complete input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+.bliss-complete span {
+  color: #c7d7d8;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.bliss-item.is-complete {
+  border-color: rgba(89, 199, 190, 0.5);
+  background: rgba(89, 199, 190, 0.085);
+}
+
+.bliss-item.is-complete h3 {
+  color: #8ce1da;
+}
+
+.bliss-notes {
+  display: block;
+  margin-top: 18px;
+}
+
+.bliss-notes textarea {
+  min-height: 110px;
+}
+
+@media (max-width: 1050px) {
+  .bliss-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .bliss-heading {
+    flex-direction: column;
+  }
+
+  .bliss-grid {
+    grid-template-columns: 1fr;
+  }
+}
