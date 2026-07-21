@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DragonFly Lotus Command Center</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">CAPTAIN REN'S DAILY FLIGHT DECK</p>
+      <h1>✦ DragonFly Lotus Command Center 🪷</h1>
+      <p>One day. One mission. One intentional life.</p>
+    </div>
+    <div class="clock">
+      <strong id="time">--:--</strong>
+      <span id="date"></span>
+    </div>
+  </header>
+
+  <nav>
+    <button class="mode active" data-mode="home">🏡 Home</button>
+    <button class="mode" data-mode="flight">✈️ Flight</button>
+    <button class="mode" data-mode="turbulence">🌧️ Turbulence</button>
+  </nav>
+
+  <main>
+    <section class="card mission">
+      <div class="title-row">
+        <div>
+          <small>MORNING BRIEFING</small>
+          <h2>Today's Mission</h2>
+        </div>
+        <span id="modeBadge">HOME</span>
+      </div>
+
+      <textarea id="mission" placeholder="What matters most today?"></textarea>
+
+      <div class="fields">
+        <label>Report / Start
+          <input id="reportTime" type="time">
+        </label>
+        <label>Leave Home
+          <input id="leaveTime" type="time">
+        </label>
+        <label>Pairing
+          <select id="pairing">
+            <option>1 day</option>
+            <option selected>2 days</option>
+            <option>3 days</option>
+            <option>4 days</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="countdown">
+        <span>Departure countdown</span>
+        <strong id="countdown">Set leave-home time</strong>
+      </div>
+    </section>
+
+    <section class="card">
+      <small>FLIGHT PATH</small>
+      <h2>Current • Next • Later</h2>
+      <label>Current<input id="current" placeholder="What are you doing now?"></label>
+      <label>Next<input id="next" placeholder="What comes next?"></label>
+      <label>Later<input id="later" placeholder="What can wait?"></label>
+    </section>
+
+    <section class="card">
+      <div class="title-row">
+        <div>
+          <small>DAILY OPERATIONS</small>
+          <h2>Checklist</h2>
+        </div>
+      </div>
+
+      <form id="taskForm">
+        <input id="taskInput" placeholder="Add a task" required>
+        <button>Add</button>
+      </form>
+      <ul id="tasks"></ul>
+    </section>
+
+    <section class="card">
+      <small>HEALTH COMMAND</small>
+      <h2>Fuel & Hydration</h2>
+
+      <div class="tracker">
+        <div><span>Water</span><strong><span id="water">0</span> / 128 oz</strong></div>
+        <progress id="waterBar" max="128" value="0"></progress>
+        <button data-water="12">+12 oz</button>
+        <button data-water="16">+16 oz</button>
+        <button data-water="-12">−12</button>
+      </div>
+
+      <div class="tracker">
+        <div><span>Protein</span><strong><span id="protein">0</span> / 170 g</strong></div>
+        <progress id="proteinBar" max="170" value="0"></progress>
+        <button data-protein="20">+20 g</button>
+        <button data-protein="30">+30 g</button>
+        <button data-protein="-10">−10</button>
+      </div>
+
+      <label class="check">
+        <input id="exercise" type="checkbox"> Exercise complete
+      </label>
+
+      <label>Workout
+        <input id="workout" placeholder="What did you do?">
+      </label>
+
+      <label>Weight
+        <input id="weight" type="number" step="0.1" placeholder="lbs">
+      </label>
+    </section>
+
+    <section class="card wide">
+      <small>FINANCIAL COMMAND</small>
+      <h2>Bills & Deadlines</h2>
+
+      <form id="billForm" class="bill-form">
+        <input id="billName" placeholder="Bill or deadline" required>
+        <input id="billAmount" type="number" step="0.01" placeholder="Amount">
+        <input id="billDate" type="date" required>
+        <button>Add</button>
+      </form>
+      <ul id="bills"></ul>
+    </section>
+
+    <section class="card">
+      <small>MODE BRIEFING</small>
+      <h2 id="modeTitle">Dragonfly Bliss</h2>
+      <div id="modeNotes"></div>
+
+      <label>📷 One Mood Per Day
+        <input id="photo" placeholder="Today's photo or mood">
+      </label>
+    </section>
+  </main>
+
+  <footer>✦ DragonFly &nbsp; • &nbsp; 🪷 Rooted in calm. Ready for flight.</footer>
+  <script src="app.js"></script>
+</body>
+</html>
