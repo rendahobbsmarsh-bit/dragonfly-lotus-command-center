@@ -227,6 +227,65 @@
   </div>
 </section>
 
+
+<section class="card wide health-dashboard" id="healthDashboard">
+  <div class="health-heading">
+    <div>
+      <small>CAPTAIN'S WELLNESS</small>
+      <h2>Health Dashboard</h2>
+    </div>
+    <span class="health-status" id="healthStatus">DAILY PROGRESS</span>
+  </div>
+
+  <div class="health-grid">
+    <div class="health-metric">
+      <div class="metric-top">
+        <label for="waterValue">Water</label>
+        <span><strong id="waterDisplay">0</strong> / 128 oz</span>
+      </div>
+      <input id="waterValue" type="number" min="0" max="128" step="1" placeholder="0">
+      <div class="progress-track">
+        <div class="progress-fill" id="waterProgress"></div>
+      </div>
+    </div>
+
+    <div class="health-metric">
+      <div class="metric-top">
+        <label for="proteinValue">Protein</label>
+        <span><strong id="proteinDisplay">0</strong> / 170 g</span>
+      </div>
+      <input id="proteinValue" type="number" min="0" max="170" step="1" placeholder="0">
+      <div class="progress-track">
+        <div class="progress-fill" id="proteinProgress"></div>
+      </div>
+    </div>
+
+    <label>
+      Weight
+      <input id="weightValue" type="number" min="0" step="0.1" placeholder="Example: 202.4">
+    </label>
+
+    <label>
+      Sleep
+      <input id="sleepValue" type="number" min="0" max="24" step="0.25" placeholder="Hours">
+    </label>
+
+    <label class="exercise-check">
+      <input id="exerciseComplete" type="checkbox">
+      <span>
+        <strong>Exercise Complete</strong>
+        <small>Gym, strength, walking, stretching or mobility</small>
+      </span>
+    </label>
+
+    <label class="health-notes">
+      Wellness Notes
+      <textarea id="healthNotes"
+        placeholder="Energy, symptoms, medications, workout notes, recovery..."></textarea>
+    </label>
+  </div>
+</section>
+
 </main>
 
   <footer>✦ DragonFly &nbsp; • &nbsp; 🪷 Rooted in calm. Ready for flight.</footer>

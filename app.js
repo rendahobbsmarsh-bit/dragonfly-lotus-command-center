@@ -232,3 +232,103 @@ function initializeFlightOperations() {
 }
 
 window.addEventListener("DOMContentLoaded", initializeFlightOperations);
+
+
+// Health Dashboard autosave
+const HEALTH_STORAGE_KEY = "dragonflyLotusHealthDashboard";
+
+const healthIds = [
+  "waterValue",
+  "proteinValue",
+  "weightValue",
+  "sleepValue",
+  "exerciseComplete",
+  "healthNotes"
+];
+
+function updateHealthProgress() {
+  const waterField = document.getElementById("waterValue");
+  const proteinField = document.getElementById("proteinValue");
+  const exerciseField = document.getElementById("exerciseComplete");
+
+  const water = Math.max(0, Number(waterField?.value || 0));
+  const protein = Math.max(0, Number(proteinField?.value || 0));
+
+  const waterDisplay = document.getElementById("waterDisplay");
+  const proteinDisplay = document.getElementById("proteinDisplay");
+  const waterProgress = document.getElementById("waterProgress");
+  const proteinProgress = document.getElementById("proteinProgress");
+  const status = document.getElementById("healthStatus");
+
+  if (waterDisplay) waterDisplay.textContent = water;
+  if (proteinDisplay) proteinDisplay.textContent = protein;
+
+  if (waterProgress) {
+    waterProgress.style.width = `${Math.min(100, (water / 128) * 100)}%`;
+  }
+
+  if (proteinProgress) {
+    proteinProgress.style.width = `${Math.min(100, (protein / 170) * 100)}%`;
+  }
+
+  if (status) {
+    if (water >= 128 && protein >= 170 && exerciseField?.checked) {
+      status.textContent = "GOALS COMPLETE";
+    } else if (water > 0 || protein > 0 || exerciseField?.checked) {
+      status.textContent = "IN PROGRESS";
+    } else {
+      status.textContent = "DAILY PROGRESS";
+    }
+  }
+}
+
+function saveHealthDashboard() {
+  const saved = {};
+
+  healthIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (!field) return;
+
+    saved[id] =
+      field.type === "checkbox"
+        ? field.checked
+        : field.value;
+  });
+
+  localStorage.setItem(
+    HEALTH_STORAGE_KEY,
+    JSON.stringify(saved)
+  );
+
+  updateHealthProgress();
+}
+
+function initializeHealthDashboard() {
+  let saved = {};
+
+  try {
+    saved = JSON.parse(
+      localStorage.getItem(HEALTH_STORAGE_KEY) || "{}"
+    );
+  } catch (error) {
+    console.warn("Health Dashboard could not be loaded.", error);
+  }
+
+  healthIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (!field) return;
+
+    if (field.type === "checkbox") {
+      field.checked = Boolean(saved[id]);
+    } else {
+      field.value = saved[id] || "";
+    }
+
+    field.addEventListener("input", saveHealthDashboard);
+    field.addEventListener("change", saveHealthDashboard);
+  });
+
+  updateHealthProgress();
+}
+
+window.addEventListener("DOMContentLoaded", initializeHealthDashboard);

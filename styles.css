@@ -172,3 +172,135 @@ footer { padding:5px 24px 28px; text-align:center; color:var(--muted); }
     grid-column: span 1;
   }
 }
+
+
+/* Health Dashboard */
+.health-dashboard {
+  grid-column: 1 / -1;
+}
+
+.health-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.health-status {
+  padding: 9px 14px;
+  border: 1px solid rgba(226, 183, 104, 0.45);
+  border-radius: 999px;
+  background: rgba(226, 183, 104, 0.12);
+  color: #f1c97f;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.health-metric {
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.035);
+}
+
+.metric-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.metric-top label {
+  margin: 0;
+}
+
+.metric-top span {
+  color: #b9d1d2;
+  font-size: 0.9rem;
+}
+
+.progress-track {
+  height: 10px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #59c7be, #e2b768);
+  transition: width 180ms ease;
+}
+
+.exercise-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(89, 199, 190, 0.25);
+  border-radius: 16px;
+  background: rgba(89, 199, 190, 0.07);
+  cursor: pointer;
+}
+
+.exercise-check input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+}
+
+.exercise-check span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.exercise-check small {
+  color: #a9c2c4;
+  letter-spacing: 0;
+}
+
+.health-notes {
+  grid-column: span 3;
+}
+
+.health-notes textarea {
+  min-height: 100px;
+}
+
+@media (max-width: 1050px) {
+  .health-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .health-notes {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 650px) {
+  .health-heading {
+    flex-direction: column;
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .health-notes {
+    grid-column: span 1;
+  }
+}
