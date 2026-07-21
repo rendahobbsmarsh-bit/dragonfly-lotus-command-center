@@ -617,3 +617,19 @@ footer { padding:5px 24px 28px; text-align:center; color:var(--muted); }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Captain's Briefing */
+.captains-briefing{grid-column:1/-1;border-color:rgba(226,183,104,.3)}
+.captains-briefing-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.captains-briefing-top p{margin:6px 0 0;color:#a9c2c4}
+#captainMode{padding:9px 14px;border:1px solid rgba(89,199,190,.42);border-radius:999px;background:rgba(89,199,190,.11);color:#8ce1da;font-size:.72rem;font-weight:800;letter-spacing:.08em;white-space:nowrap}
+.captain-mission{margin-top:18px;padding:17px;border:1px solid rgba(226,183,104,.25);border-radius:16px;background:rgba(226,183,104,.065)}
+.captain-mission small,.captain-grid small{display:block;color:#d7b66f;font-size:.68rem;font-weight:800;letter-spacing:.1em}
+.captain-mission strong{display:block;margin-top:7px;color:#f6f2e8;font-size:1.2rem}
+.captain-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.captain-grid article{padding:16px;border:1px solid rgba(255,255,255,.085);border-radius:16px;background:rgba(255,255,255,.03)}
+.captain-grid strong{display:block;margin-top:6px;color:#f6f2e8}
+.captain-grid span{display:block;margin-top:5px;color:#9eb4b6;font-size:.8rem}
+@media(max-width:900px){.captain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.captains-briefing-top{flex-direction:column}.captain-grid{grid-template-columns:1fr}}

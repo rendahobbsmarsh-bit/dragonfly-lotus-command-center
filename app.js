@@ -683,3 +683,87 @@ if (document.readyState === "loading") {
 } else {
   initializeDragonflyBliss();
 }
+
+
+// Captain's Briefing
+function readCaptainStorage(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key) || "null") ?? fallback; }
+  catch { return fallback; }
+}
+
+function setCaptainText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function captainTime(value) {
+  if (!value) return "";
+  const [h, m] = value.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function updateCaptainsBriefing() {
+  const state = readCaptainStorage("dragonfly-lotus-v1", {});
+  const health = readCaptainStorage("dragonflyLotusHealthDashboard", {});
+  const flight = readCaptainStorage("dragonflyLotusFlightOperations", {});
+  const countdowns = readCaptainStorage("dragonflyLotusCountdowns", []);
+  const bliss = readCaptainStorage("dragonflyLotusBliss", {});
+
+  const now = new Date();
+  const greeting = now.getHours() < 12 ? "Good Morning" : now.getHours() < 17 ? "Good Afternoon" : "Good Evening";
+  setCaptainText("captainGreeting", `${greeting}, Captain Ren`);
+  setCaptainText("captainDate", now.toLocaleDateString([], { weekday:"long", month:"long", day:"numeric", year:"numeric" }));
+
+  const mode = String(state.mode || "home").toUpperCase();
+  setCaptainText("captainMode", `${mode} MODE`);
+  setCaptainText("captainMission", (state.mission || "").trim() || "Set today's mission below.");
+
+  const flightNumber = (flight.opsFlightNumber || "").trim();
+  const route = (flight.opsRoute || "").trim();
+  setCaptainText("captainFlight", [flightNumber, route].filter(Boolean).join(" • ") || "No flight entered");
+
+  const times = [];
+  if (state.leaveTime) times.push(`Leave ${captainTime(state.leaveTime)}`);
+  if (state.reportTime) times.push(`Report ${captainTime(state.reportTime)}`);
+  setCaptainText("captainTimes", times.join(" • ") || "Times not set");
+
+  const water = Number(health.waterValue ?? state.water ?? 0) || 0;
+  const protein = Number(health.proteinValue ?? state.protein ?? 0) || 0;
+  const exercise = Boolean(health.exerciseComplete ?? state.exercise);
+  setCaptainText("captainWater", `${water} / 128 oz`);
+  setCaptainText("captainProtein", `${protein} / 170 g`);
+  setCaptainText("captainExercise", exercise ? "Complete" : "Not complete");
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const active = Array.isArray(countdowns) ? countdowns.map(item => {
+    const date = new Date(`${item.date}T00:00:00`);
+    return { ...item, days: Math.round((date - today) / 86400000) };
+  }).filter(item => Number.isFinite(item.days) && item.days >= 0).sort((a,b) => a.days-b.days) : [];
+
+  if (active[0]) {
+    setCaptainText("captainCountdown", active[0].name || active[0].event || "Upcoming event");
+    setCaptainText("captainCountdownDays", active[0].days === 0 ? "Today" : `${active[0].days} day${active[0].days === 1 ? "" : "s"} remaining`);
+  } else {
+    setCaptainText("captainCountdown", "No active countdown");
+    setCaptainText("captainCountdownDays", "Add a date below");
+  }
+
+  const done = ["blissHomeDone","blissGardenDone","blissPhotographyDone","blissMealPrepDone","blissLaundryDone","blissWorkoutDone"]
+    .filter(id => Boolean(bliss[id])).length;
+  setCaptainText("captainBliss", `${done} of 6 complete`);
+}
+
+function initializeCaptainsBriefing() {
+  updateCaptainsBriefing();
+  document.addEventListener("input", () => setTimeout(updateCaptainsBriefing, 0));
+  document.addEventListener("change", () => setTimeout(updateCaptainsBriefing, 0));
+  setInterval(updateCaptainsBriefing, 60000);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeCaptainsBriefing, { once:true });
+} else {
+  initializeCaptainsBriefing();
+}
