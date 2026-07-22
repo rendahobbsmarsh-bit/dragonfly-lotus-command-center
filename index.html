@@ -1,563 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#171424" />
   <title>DragonFly Lotus Command Center</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
+  <header class="topbar">
     <div>
-      <p class="eyebrow">CAPTAIN REN'S DAILY FLIGHT DECK</p>
-      <h1>✦ DragonFly Lotus Command Center 🪷</h1>
-      <p>One day. One mission. One intentional life.</p>
+      <p class="eyebrow">DRAGONFLY LOTUS</p>
+      <h1>Command Center</h1>
     </div>
-    <div class="clock">
+    <div class="clock-block">
       <strong id="time">--:--</strong>
-      <span id="date"></span>
+      <span id="date">Loading date…</span>
     </div>
   </header>
 
-  <nav>
-    <button class="mode active" data-mode="home">🏡 Home</button>
-    <button class="mode" data-mode="flight">✈️ Flight</button>
-    <button class="mode" data-mode="turbulence">🌧️ Turbulence</button>
-  </nav>
-
-  <main>
-
-<section class="card wide captains-briefing" id="captainsBriefing">
-  <div class="captains-briefing-top">
-    <div>
-      <small>DAILY COMMAND OVERVIEW</small>
-      <h2 id="captainGreeting">Captain Ren's Briefing</h2>
-      <p id="captainDate"></p>
-    </div>
-    <span id="captainMode">HOME MODE</span>
-  </div>
-
-  <div class="captain-mission">
-    <small>TODAY'S MISSION</small>
-    <strong id="captainMission">Set today's mission below.</strong>
-  </div>
-
-  <div class="captain-grid">
-    <article><small>FLIGHT PLAN</small><strong id="captainFlight">No flight entered</strong><span id="captainTimes">Times not set</span></article>
-    <article><small>WATER</small><strong id="captainWater">0 / 128 oz</strong></article>
-    <article><small>PROTEIN</small><strong id="captainProtein">0 / 170 g</strong></article>
-    <article><small>EXERCISE</small><strong id="captainExercise">Not complete</strong></article>
-    <article><small>NEXT COUNTDOWN</small><strong id="captainCountdown">No active countdown</strong><span id="captainCountdownDays">Add a date below</span></article>
-    <article><small>DRAGONFLY BLISS</small><strong id="captainBliss">0 of 6 complete</strong></article>
-  </div>
-</section>
-
-<section class="card wide captain-recommendations" id="captainRecommendations">
-  <div class="recommendations-heading">
-    <div>
-      <small>QUIET GUIDANCE</small>
-      <h2>Captain's Recommendations</h2>
-      <p>What deserves your attention next, based on today's dashboard.</p>
-    </div>
-    <span class="recommendations-status" id="recommendationsStatus">SYSTEMS REVIEW</span>
-  </div>
-
-  <div class="recommendations-list" id="recommendationsList" aria-live="polite">
-    <article class="recommendation-item">
-      <span class="recommendation-icon">✦</span>
+  <main class="dashboard">
+    <section class="hero panel">
       <div>
-        <strong>Reviewing today's flight deck</strong>
-        <p>Your guidance will appear here.</p>
+        <span id="modeBadge" class="badge">HOME</span>
+        <h2 id="modeTitle">Dragonfly Bliss</h2>
+        <div id="modeNotes" class="mode-notes"></div>
       </div>
-    </article>
-  </div>
-</section>
-
-
-    <section class="card mission">
-      <div class="title-row">
-        <div>
-          <small>MORNING BRIEFING</small>
-          <h2>Today's Mission</h2>
-        </div>
-        <span id="modeBadge">HOME</span>
-      </div>
-
-      <textarea id="mission" placeholder="What matters most today?"></textarea>
-
-      <div class="fields">
-        <label>Report / Start
-          <input id="reportTime" type="time">
-        </label>
-        <label>Leave Home
-          <input id="leaveTime" type="time">
-        </label>
-        <label>Pairing
-          <select id="pairing">
-            <option>1 day</option>
-            <option selected>2 days</option>
-            <option>3 days</option>
-            <option>4 days</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="countdown">
-        <span>Departure countdown</span>
-        <strong id="countdown">Set leave-home time</strong>
+      <div class="mode-switcher">
+        <button class="mode" data-mode="home">Home</button>
+        <button class="mode" data-mode="flight">Flight Attendant</button>
+        <button class="mode" data-mode="turbulence">Turbulence</button>
       </div>
     </section>
 
-    <section class="card">
-      <small>FLIGHT PATH</small>
-      <h2>Current • Next • Later</h2>
-      <label>Current<input id="current" placeholder="What are you doing now?"></label>
-      <label>Next<input id="next" placeholder="What comes next?"></label>
-      <label>Later<input id="later" placeholder="What can wait?"></label>
+    <section class="panel captain">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CAPTAIN'S BRIEFING</p>
+          <h2 id="captainGreeting">Good Day, Captain Ren</h2>
+          <p id="captainDate"></p>
+        </div>
+        <span id="captainMode" class="status-pill">HOME MODE</span>
+      </div>
+      <div class="briefing-grid">
+        <div><span>Mission</span><strong id="captainMission">Set today's mission below.</strong></div>
+        <div><span>Flight</span><strong id="captainFlight">No flight entered</strong></div>
+        <div><span>Timing</span><strong id="captainTimes">Times not set</strong></div>
+        <div><span>Next Countdown</span><strong id="captainCountdown">No active countdown</strong><small id="captainCountdownDays">Add a date below</small></div>
+        <div><span>Water</span><strong id="captainWater">0 / 128 oz</strong></div>
+        <div><span>Protein</span><strong id="captainProtein">0 / 170 g</strong></div>
+        <div><span>Exercise</span><strong id="captainExercise">Not complete</strong></div>
+        <div><span>Dragonfly Bliss</span><strong id="captainBliss">0 of 6 complete</strong></div>
+      </div>
     </section>
 
-    <section class="card">
-      <div class="title-row">
+    <section class="panel">
+      <div class="section-heading">
         <div>
-          <small>DAILY OPERATIONS</small>
-          <h2>Checklist</h2>
+          <p class="eyebrow">TODAY'S FLIGHT PATH</p>
+          <h2>Day at a Glance</h2>
         </div>
       </div>
+      <div class="form-grid">
+        <label>Mission<input id="mission" type="text" placeholder="One intentional mission" /></label>
+        <label>Report Time<input id="reportTime" type="time" /></label>
+        <label>Leave Home<input id="leaveTime" type="time" /></label>
+        <label>Pairing<select id="pairing"><option>1 day</option><option>2 days</option><option>3 days</option><option>4 days</option></select></label>
+      </div>
+      <div class="countdown-strip">Departure countdown: <strong id="countdown">Set leave-home time</strong></div>
+      <div class="focus-grid">
+        <label>Current<textarea id="current" placeholder="What is in front of you now?"></textarea></label>
+        <label>Next<textarea id="next" placeholder="What comes next?"></textarea></label>
+        <label>Later<textarea id="later" placeholder="What can wait?"></textarea></label>
+      </div>
+    </section>
 
-      <form id="taskForm">
-        <input id="taskInput" placeholder="Add a task" required>
-        <button>Add</button>
+    <section class="panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">HEALTH DASHBOARD</p><h2>Daily Instruments</h2></div>
+        <span id="healthStatus" class="status-pill">DAILY PROGRESS</span>
+      </div>
+      <div class="health-grid">
+        <div class="metric-card">
+          <span>Water</span><strong><span id="waterDisplay">0</span> / 128 oz</strong>
+          <div class="progress"><div id="waterProgress"></div></div>
+          <input id="waterValue" type="number" min="0" step="1" placeholder="Ounces" />
+        </div>
+        <div class="metric-card">
+          <span>Protein</span><strong><span id="proteinDisplay">0</span> / 170 g</strong>
+          <div class="progress"><div id="proteinProgress"></div></div>
+          <input id="proteinValue" type="number" min="0" step="1" placeholder="Grams" />
+        </div>
+        <label>Weight<input id="weightValue" type="number" step="0.1" placeholder="Weight" /></label>
+        <label>Sleep<input id="sleepValue" type="number" step="0.25" placeholder="Hours" /></label>
+        <label class="checkline"><input id="exerciseComplete" type="checkbox" /> Exercise complete</label>
+        <label class="wide">Health notes<textarea id="healthNotes" placeholder="Energy, medication, symptoms, wins…"></textarea></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">QUICK TRACKERS</p><h2>Original Instruments</h2></div>
+      </div>
+      <div class="tracker-row">
+        <div class="tracker">
+          <span>Water</span><strong id="water">0</strong>
+          <progress id="waterBar" max="128" value="0"></progress>
+          <div class="button-row"><button data-water="12">+12 oz</button><button data-water="16">+16 oz</button><button data-water="-12">−12</button></div>
+        </div>
+        <div class="tracker">
+          <span>Protein</span><strong id="protein">0</strong>
+          <progress id="proteinBar" max="170" value="0"></progress>
+          <div class="button-row"><button data-protein="20">+20 g</button><button data-protein="30">+30 g</button><button data-protein="-20">−20</button></div>
+        </div>
+        <label class="checkline"><input id="exercise" type="checkbox" /> Exercise complete</label>
+        <label>Workout<input id="workout" type="text" placeholder="Today's movement" /></label>
+        <label>Weight<input id="weight" type="number" step="0.1" /></label>
+        <label>Photo<input id="photo" type="text" placeholder="One Mood Per Day note" /></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">CAPTAIN'S RECOMMENDATIONS</p><h2>Steady Guidance</h2></div>
+        <span id="recommendationsStatus" class="status-pill">STEADY GUIDANCE</span>
+      </div>
+      <div id="recommendationsList" class="recommendations-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">FLIGHT OPERATIONS</p><h2>Trip Details</h2></div></div>
+      <div class="form-grid">
+        <label>Flight Number<input id="opsFlightNumber" /></label>
+        <label>Route<input id="opsRoute" placeholder="DAL → LGA" /></label>
+        <label>Aircraft<input id="opsAircraft" /></label>
+        <label>Position<input id="opsPosition" /></label>
+        <label>Layover<input id="opsLayover" /></label>
+        <label>Van Time<input id="opsVanTime" type="time" /></label>
+        <label>Hotel<input id="opsHotel" /></label>
+        <label class="wide">Crew Notes<textarea id="opsCrewNotes"></textarea></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">TASKS</p><h2>Today’s Checklist</h2></div></div>
+      <form id="taskForm" class="inline-form">
+        <input id="taskInput" type="text" placeholder="Add a task" />
+        <button type="submit">Add</button>
       </form>
-      <ul id="tasks"></ul>
+      <ul id="tasks" class="clean-list"></ul>
     </section>
 
-    <section class="card">
-      <small>HEALTH COMMAND</small>
-      <h2>Fuel & Hydration</h2>
-
-      <div class="tracker">
-        <div><span>Water</span><strong><span id="water">0</span> / 128 oz</strong></div>
-        <progress id="waterBar" max="128" value="0"></progress>
-        <button data-water="12">+12 oz</button>
-        <button data-water="16">+16 oz</button>
-        <button data-water="-12">−12</button>
-      </div>
-
-      <div class="tracker">
-        <div><span>Protein</span><strong><span id="protein">0</span> / 170 g</strong></div>
-        <progress id="proteinBar" max="170" value="0"></progress>
-        <button data-protein="20">+20 g</button>
-        <button data-protein="30">+30 g</button>
-        <button data-protein="-10">−10</button>
-      </div>
-
-      <label class="check">
-        <input id="exercise" type="checkbox"> Exercise complete
-      </label>
-
-      <label>Workout
-        <input id="workout" placeholder="What did you do?">
-      </label>
-
-      <label>Weight
-        <input id="weight" type="number" step="0.1" placeholder="lbs">
-      </label>
-    </section>
-
-    <section class="card wide">
-      <small>FINANCIAL COMMAND</small>
-      <h2>Bills & Deadlines</h2>
-
-      <form id="billForm" class="bill-form">
-        <input id="billName" placeholder="Bill or deadline" required>
-        <input id="billAmount" type="number" step="0.01" placeholder="Amount">
-        <input id="billDate" type="date" required>
-        <button>Add</button>
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">COUNTDOWN CENTER</p><h2>Upcoming Milestones</h2></div><span id="countdownStatus" class="status-pill">0 ACTIVE</span></div>
+      <form id="countdownForm" class="form-grid">
+        <label>Name<input id="countdownName" required /></label>
+        <label>Date<input id="countdownDate" type="date" required /></label>
+        <label>Category<select id="countdownCategory"><option>Personal</option><option>Travel</option><option>Work</option><option>Money</option><option>Health</option></select></label>
+        <button type="submit">Add Countdown</button>
       </form>
-      <ul id="bills"></ul>
+      <p id="countdownEmpty">No countdowns yet.</p>
+      <div id="countdownList" class="countdown-list"></div>
     </section>
 
-    <section class="card">
-      <small>MODE BRIEFING</small>
-      <h2 id="modeTitle">Dragonfly Bliss</h2>
-      <div id="modeNotes"></div>
-
-      <label>📷 One Mood Per Day
-        <input id="photo" placeholder="Today's photo or mood">
-      </label>
-    </section>
-  
-    <section class="card wide quick-capture">
-      <small>COMMAND NOTES</small>
-      <h2>Quick Capture</h2>
-      <p class="helper-text">
-        Use this for appointments, physician visits, errands, or anything you need to remember.
-      </p>
-
-      <label>Appointment / Purpose
-        <input id="appointmentPurpose"
-               placeholder="Example: Physician visit, annual checkup">
-      </label>
-
-      <label>Questions I Want Answered
-        <textarea id="appointmentQuestions"
-                  placeholder="Questions, symptoms, medications, concerns..."></textarea>
-      </label>
-
-      <label>Notes
-        <textarea id="appointmentNotes"
-                  placeholder="What did I learn? What did the physician say?"></textarea>
-      </label>
-
-      <div class="quick-fields">
-        <label>Follow-up Date
-          <input id="followUpDate" type="date">
-        </label>
-
-        <label>Next Step
-          <input id="appointmentNextStep"
-                 placeholder="Prescription, lab work, call, schedule follow-up...">
-        </label>
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">DRAGONFLY BLISS</p><h2>Home Mode Progress</h2></div><span id="blissStatus" class="status-pill">0 OF 6 COMPLETE</span></div>
+      <div class="bliss-grid">
+        <article class="bliss-item"><label><input id="blissHomeDone" type="checkbox" /> Home</label><input id="blissHome" placeholder="Home focus" /></article>
+        <article class="bliss-item"><label><input id="blissGardenDone" type="checkbox" /> Garden</label><input id="blissGarden" placeholder="Garden focus" /></article>
+        <article class="bliss-item"><label><input id="blissPhotographyDone" type="checkbox" /> Photography</label><input id="blissPhotography" placeholder="Photo focus" /></article>
+        <article class="bliss-item"><label><input id="blissMealPrepDone" type="checkbox" /> Meal Prep</label><input id="blissMealPrep" placeholder="Meal prep focus" /></article>
+        <article class="bliss-item"><label><input id="blissLaundryDone" type="checkbox" /> Laundry</label><input id="blissLaundry" placeholder="Laundry focus" /></article>
+        <article class="bliss-item"><label><input id="blissWorkoutDone" type="checkbox" /> Workout</label><input id="blissWorkout" placeholder="Workout focus" /></article>
       </div>
+      <label>Bliss Notes<textarea id="blissNotes"></textarea></label>
     </section>
 
-  
-<section class="card wide flight-operations" id="flightOperations">
-  <div class="flight-heading">
-    <div>
-      <small>FLIGHT ATTENDANT MODE</small>
-      <h2>Flight Operations</h2>
-    </div>
-    <span class="flight-status">READY FOR DEPARTURE</span>
-  </div>
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">MONEY & BILLS</p><h2>Due Dates</h2></div></div>
+      <form id="billForm" class="form-grid">
+        <label>Bill<input id="billName" required /></label>
+        <label>Amount<input id="billAmount" type="number" step="0.01" /></label>
+        <label>Due Date<input id="billDate" type="date" required /></label>
+        <button type="submit">Add Bill</button>
+      </form>
+      <ul id="bills" class="clean-list"></ul>
+    </section>
 
-  <div class="flight-operations-grid">
-    <label>
-      Flight Number
-      <input id="opsFlightNumber" placeholder="Example: WN 1842">
-    </label>
-
-    <label>
-      Route
-      <input id="opsRoute" placeholder="Example: DAL → BWI">
-    </label>
-
-    <label>
-      Aircraft
-      <input id="opsAircraft" placeholder="Example: 737-800">
-    </label>
-
-    <label>
-      Position
-      <input id="opsPosition" placeholder="Example: A, B or C">
-    </label>
-
-    <label>
-      Layover
-      <input id="opsLayover" placeholder="Example: PHL — 28 hours">
-    </label>
-
-    <label>
-      Van Time
-      <input id="opsVanTime" type="time">
-    </label>
-
-    <label class="flight-span-two">
-      Hotel
-      <input id="opsHotel" placeholder="Hotel name and location">
-    </label>
-
-    <label class="flight-span-two">
-      Crew Notes
-      <textarea id="opsCrewNotes"
-        placeholder="Crew names, cabin notes, meals, transportation and reminders..."></textarea>
-    </label>
-  </div>
-</section>
-
-
-<section class="card wide health-dashboard" id="healthDashboard">
-  <div class="health-heading">
-    <div>
-      <small>CAPTAIN'S WELLNESS</small>
-      <h2>Health Dashboard</h2>
-    </div>
-    <span class="health-status" id="healthStatus">DAILY PROGRESS</span>
-  </div>
-
-  <div class="health-grid">
-    <div class="health-metric">
-      <div class="metric-top">
-        <label for="waterValue">Water</label>
-        <span><strong id="waterDisplay">0</strong> / 128 oz</span>
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">APPOINTMENT PREP</p><h2>Medical & Personal Notes</h2></div></div>
+      <div class="form-grid">
+        <label>Purpose<input id="appointmentPurpose" /></label>
+        <label>Follow-up Date<input id="followUpDate" type="date" /></label>
+        <label class="wide">Questions<textarea id="appointmentQuestions"></textarea></label>
+        <label class="wide">Notes<textarea id="appointmentNotes"></textarea></label>
+        <label class="wide">Next Step<textarea id="appointmentNextStep"></textarea></label>
       </div>
-      <input id="waterValue" type="number" min="0" max="128" step="1" placeholder="0">
-      <div class="progress-track">
-        <div class="progress-fill" id="waterProgress"></div>
-      </div>
-    </div>
+    </section>
+  </main>
 
-    <div class="health-metric">
-      <div class="metric-top">
-        <label for="proteinValue">Protein</label>
-        <span><strong id="proteinDisplay">0</strong> / 170 g</span>
-      </div>
-      <input id="proteinValue" type="number" min="0" max="170" step="1" placeholder="0">
-      <div class="progress-track">
-        <div class="progress-fill" id="proteinProgress"></div>
-      </div>
-    </div>
-
-    <label>
-      Weight
-      <input id="weightValue" type="number" min="0" step="0.1" placeholder="Example: 202.4">
-    </label>
-
-    <label>
-      Sleep
-      <input id="sleepValue" type="number" min="0" max="24" step="0.25" placeholder="Hours">
-    </label>
-
-    <label class="exercise-check">
-      <input id="exerciseComplete" type="checkbox">
-      <span>
-        <strong>Exercise Complete</strong>
-        <small>Gym, strength, walking, stretching or mobility</small>
-      </span>
-    </label>
-
-    <label class="health-notes">
-      Wellness Notes
-      <textarea id="healthNotes"
-        placeholder="Energy, symptoms, medications, workout notes, recovery..."></textarea>
-    </label>
-  </div>
-</section>
-
-
-<section class="card wide countdown-center" id="countdownCenter">
-  <div class="countdown-heading">
-    <div>
-      <small>DATES ON THE RADAR</small>
-      <h2>Countdown Center</h2>
-    </div>
-    <span class="countdown-status" id="countdownStatus">0 ACTIVE</span>
-  </div>
-
-  <form class="countdown-form" id="countdownForm">
-    <label>
-      Event or Deadline
-      <input
-        id="countdownName"
-        type="text"
-        placeholder="Example: Vacation"
-        required
-      >
-    </label>
-
-    <label>
-      Date
-      <input
-        id="countdownDate"
-        type="date"
-        required
-      >
-    </label>
-
-    <label>
-      Category
-      <select id="countdownCategory">
-        <option value="Personal">Personal</option>
-        <option value="Flight">Flight</option>
-        <option value="Home">Home</option>
-        <option value="Money">Money</option>
-        <option value="Health">Health</option>
-        <option value="Work">Work</option>
-      </select>
-    </label>
-
-    <button class="countdown-add-button" type="submit">
-      Add Countdown
-    </button>
-  </form>
-
-  <div class="countdown-list" id="countdownList"></div>
-
-  <p class="countdown-empty" id="countdownEmpty">
-    No countdowns yet. Add the next important date on your radar.
-  </p>
-</section>
-
-
-<section class="card wide bliss-center" id="dragonflyBliss">
-  <div class="bliss-heading">
-    <div>
-      <small>HOME MODE</small>
-      <h2>Dragonfly Bliss</h2>
-      <p class="bliss-subtitle">
-        Gentle progress throughout your home, body and creative life.
-      </p>
-    </div>
-
-    <span class="bliss-status" id="blissStatus">
-      0 OF 6 COMPLETE
-    </span>
-  </div>
-
-  <div class="bliss-grid">
-
-    <article class="bliss-item">
-      <div class="bliss-item-heading">
-        <span class="bliss-icon">🏡</span>
-        <div>
-          <h3>Home</h3>
-          <small>Order, comfort and projects</small>
-        </div>
-      </div>
-
-      <label>
-        Today’s Home Focus
-        <textarea
-          id="blissHome"
-          placeholder="Example: Reset the bedroom and clear the entry table..."
-        ></textarea>
-      </label>
-
-      <label class="bliss-complete">
-        <input id="blissHomeDone" type="checkbox">
-        <span>Home focus complete</span>
-      </label>
-    </article>
-
-    <article class="bliss-item">
-      <div class="bliss-item-heading">
-        <span class="bliss-icon">🌿</span>
-        <div>
-          <h3>Garden</h3>
-          <small>Dragonfly Bliss outdoors</small>
-        </div>
-      </div>
-
-      <label>
-        Today’s Garden Focus
-        <textarea
-          id="blissGarden"
-          placeholder="Example: Water containers and inspect the pond..."
-        ></textarea>
-      </label>
-
-      <label class="bliss-complete">
-        <input id="blissGardenDone" type="checkbox">
-        <span>Garden focus complete</span>
-      </label>
-    </article>
-
-    <article class="bliss-item">
-      <div class="bliss-item-heading">
-        <span class="bliss-icon">📷</span>
-        <div>
-          <h3>Photography</h3>
-          <small>One mood, one moment</small>
-        </div>
-      </div>
-
-      <label>
-        Today’s Photography Focus
-        <textarea
-          id="blissPhotography"
-          placeholder="Example: Take one intentional photo during golden hour..."
-        ></textarea>
-      </label>
-
-      <label class="bliss-complete">
-        <input id="blissPhotographyDone" type="checkbox">
-        <span>Photography focus complete</span>
-      </label>
-    </article>
-
-    <article class="bliss-item">
-      <div class="bliss-item-heading">
-        <span class="bliss-icon">🍽️</span>
-        <div>
-          <h3>Meal Prep</h3>
-          <small>Nourishment and food-bag readiness</small>
-        </div>
-      </div>
-
-      <label>
-        Today’s Meal-Prep Focus
-        <textarea
-          id="blissMealPrep"
-          placeholder="Example: Prepare protein, fruit and flight snacks..."
-        ></textarea>
-      </label>
-
-      <label class="bliss-complete">
-        <input id="blissMealPrepDone" type="checkbox">
-        <span>Meal-prep focus complete</span>
-      </label>
-    </article>
-
-    <article class="bliss-item">
-      <div class="bliss-item-heading">
-        <span class="bliss-icon">🧺</span>
-        <div>
-          <h3>Laundry</h3>
-          <small>Uniforms, linens and reset</small>
-        </div>
-      </div>
-
-      <label>
-        Today’s Laundry Focus
-        <textarea
-          id="blissLaundry"
-          placeholder="Example: Wash uniforms and reset the suitcase..."
-        ></textarea>
-      </label>
-
-      <label class="bliss-complete">
-        <input id="blissLaundryDone" type="checkbox">
-        <span>Laundry focus complete</span>
-      </label>
-    </article>
-
-    <article class="bliss-item">
-      <div class="bliss-item-heading">
-        <span class="bliss-icon">💪</span>
-        <div>
-          <h3>Workout</h3>
-          <small>Strength, mobility and recovery</small>
-        </div>
-      </div>
-
-      <label>
-        Today’s Workout Focus
-        <textarea
-          id="blissWorkout"
-          placeholder="Example: Strength session, stretching or a recovery walk..."
-        ></textarea>
-      </label>
-
-      <label class="bliss-complete">
-        <input id="blissWorkoutDone" type="checkbox">
-        <span>Workout focus complete</span>
-      </label>
-    </article>
-
-  </div>
-
-  <label class="bliss-notes">
-    Dragonfly Bliss Notes
-    <textarea
-      id="blissNotes"
-      placeholder="Ideas, observations, supplies needed or something beautiful from today..."
-    ></textarea>
-  </label>
-</section>
-
-</main>
-
-  <footer>✦ DragonFly &nbsp; • &nbsp; 🪷 Rooted in calm. Ready for flight.</footer>
-  <script src="app.js?v=20260721-captain-recommendations"></script>
+  <footer>One day. One mission. One intentional life.</footer>
+  <script src="app.js"></script>
 </body>
 </html>

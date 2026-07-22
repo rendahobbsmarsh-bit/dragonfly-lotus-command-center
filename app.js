@@ -1,16 +1,130 @@
-const KEY="dragonfly-lotus-v1";
-const defaults={
- mode:"home",mission:"",reportTime:"",leaveTime:"",pairing:"2 days",
- current:"",next:"",later:"",water:0,protein:0,exercise:false,
- workout:"",weight:"",photo:"",
- tasks:["Stretch","Take one photo","Read 20 minutes","10 minutes of sunshine"]
-   .map(text=>({id:crypto.randomUUID(),text,done:false})),
- bills:[]
+const KEY = "dragonfly-lotus-v1";
+const HEALTH_STORAGE_KEY = "dragonflyLotusHealthDashboard";
+const FLIGHT_OPERATIONS_KEY = "dragonflyLotusFlightOperations";
+const COUNTDOWN_STORAGE_KEY = "dragonflyLotusCountdowns";
+function readStorage(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
+  } catch (error) {
+    console.warn(`Could not read ${key}.`, error);
+    return fallback;
+  }
+}
+
+function makeId() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random()}`;
+}
+
+const defaults = {
+  mode: "home",
+  mission: "",
+  reportTime: "",
+  leaveTime: "",
+  pairing: "2 days",
+  current: "",
+  next: "",
+  later: "",
+  water: 0,
+  protein: 0,
+  exercise: false,
+  workout: "",
+  weight: "",
+  photo: "",
+  appointmentPurpose: "",
+  appointmentQuestions: "",
+  appointmentNotes: "",
+  followUpDate: "",
+  appointmentNextStep: "",
+  tasks: ["Stretch", "Take one photo", "Read 20 minutes", "10 minutes of sunshine"]
+    .map(text => ({ id: makeId(), text, done: false })),
+  bills: []
 };
-let state={...defaults,...JSON.parse(localStorage.getItem(KEY)||"{}")};
-const $=s=>document.querySelector(s);
-const $$=s=>[...document.querySelectorAll(s)];
-const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+
+let state = {
+  ...defaults,
+  ...readStorage(KEY, {})
+};
+
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+}
+
+function numberOrZero(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, number) : 0;
+}
+
+function getSavedHealth() {
+  const saved = readStorage(HEALTH_STORAGE_KEY, {});
+  return {
+    waterValue: numberOrZero(saved.waterValue ?? saved.water ?? state.water),
+    proteinValue: numberOrZero(saved.proteinValue ?? saved.protein ?? state.protein),
+    weightValue: saved.weightValue ?? state.weight ?? "",
+    sleepValue: saved.sleepValue ?? "",
+    exerciseComplete: Boolean(
+      saved.exerciseComplete ?? saved.exercise ?? state.exercise
+    ),
+    healthNotes: saved.healthNotes ?? ""
+  };
+}
+
+function getHealthData() {
+  const saved = getSavedHealth();
+  const live = (id, fallback) => {
+    const field = document.getElementById(id);
+    if (!field) return fallback;
+    return field.type === "checkbox" ? field.checked : field.value;
+  };
+
+  return {
+    waterValue: numberOrZero(live("waterValue", saved.waterValue)),
+    proteinValue: numberOrZero(live("proteinValue", saved.proteinValue)),
+    weightValue: live("weightValue", saved.weightValue) ?? "",
+    sleepValue: live("sleepValue", saved.sleepValue) ?? "",
+    exerciseComplete: Boolean(
+      live("exerciseComplete", saved.exerciseComplete)
+    ),
+    healthNotes: live("healthNotes", saved.healthNotes) ?? ""
+  };
+}
+
+function saveUnifiedHealth(health = getHealthData()) {
+  const normalized = {
+    waterValue: numberOrZero(health.waterValue),
+    proteinValue: numberOrZero(health.proteinValue),
+    weightValue: health.weightValue ?? "",
+    sleepValue: health.sleepValue ?? "",
+    exerciseComplete: Boolean(health.exerciseComplete),
+    healthNotes: health.healthNotes ?? ""
+  };
+
+  localStorage.setItem(HEALTH_STORAGE_KEY, JSON.stringify(normalized));
+
+  state.water = normalized.waterValue;
+  state.protein = normalized.proteinValue;
+  state.weight = normalized.weightValue;
+  state.exercise = normalized.exerciseComplete;
+  save();
+
+  return normalized;
+}
+
+function refreshSharedViews() {
+  if (typeof renderHealth === "function") renderHealth();
+  if (typeof updateHealthProgress === "function") updateHealthProgress(false);
+  if (typeof updateCaptainsBriefing === "function") updateCaptainsBriefing();
+  if (typeof updateCaptainRecommendations === "function") {
+    updateCaptainRecommendations();
+  }
+  if (typeof updateMorningIntelligence === "function") {
+    updateMorningIntelligence();
+  }
+}
 
 function clock(){
  const now=new Date();
@@ -35,13 +149,31 @@ function countdown(now=new Date()){
  $("#countdown").textContent=`${Math.floor(mins/60)}h ${mins%60}m`;
 }
 
-function bind(id,key,event="input"){
- const el=$(id);
- el.value=state[key]??"";
- el.addEventListener(event,e=>{
-   state[key]=e.target.value; save();
-   if(key==="leaveTime") countdown();
- });
+function bind(id, key, event = "input") {
+  const el = $(id);
+  if (!el) return;
+
+  el.value = state[key] ?? "";
+  el.addEventListener(event, e => {
+    state[key] = e.target.value;
+    save();
+
+    if (key === "leaveTime") countdown();
+
+    if (key === "weight") {
+      const health = getHealthData();
+      health.weightValue = e.target.value;
+      saveUnifiedHealth(health);
+      populateHealthFields(health);
+    }
+
+    if (typeof updateCaptainsBriefing === "function") {
+      updateCaptainsBriefing();
+    }
+    if (typeof updateCaptainRecommendations === "function") {
+      updateCaptainRecommendations();
+    }
+  });
 }
 
 const modeData={
@@ -90,12 +222,20 @@ function renderTasks(){
  });
 }
 
-function renderHealth(){
- $("#water").textContent=state.water;
- $("#protein").textContent=state.protein;
- $("#waterBar").value=state.water;
- $("#proteinBar").value=state.protein;
- $("#exercise").checked=state.exercise;
+function renderHealth() {
+  const health = getHealthData();
+
+  const water = document.getElementById("water");
+  const protein = document.getElementById("protein");
+  const waterBar = document.getElementById("waterBar");
+  const proteinBar = document.getElementById("proteinBar");
+  const exercise = document.getElementById("exercise");
+
+  if (water) water.textContent = health.waterValue;
+  if (protein) protein.textContent = health.proteinValue;
+  if (waterBar) waterBar.value = health.waterValue;
+  if (proteinBar) proteinBar.value = health.proteinValue;
+  if (exercise) exercise.checked = health.exerciseComplete;
 }
 
 function renderBills(){
@@ -137,24 +277,46 @@ $("#taskForm").onsubmit=e=>{
  const input=$("#taskInput");
  if(!input.value.trim()) return;
  state.tasks.push({
-   id:crypto.randomUUID(),text:input.value.trim(),done:false
+   id:makeId(),text:input.value.trim(),done:false
  });
  input.value=""; save(); renderTasks();
 };
 
-$$("[data-water]").forEach(b=>b.onclick=()=>{
- state.water=Math.max(0,state.water+Number(b.dataset.water));
- save(); renderHealth();
+$$("[data-water]").forEach(button => {
+  button.onclick = () => {
+    const health = getHealthData();
+    health.waterValue = Math.max(
+      0,
+      health.waterValue + Number(button.dataset.water)
+    );
+    saveUnifiedHealth(health);
+    populateHealthFields(health);
+    refreshSharedViews();
+  };
 });
 
-$$("[data-protein]").forEach(b=>b.onclick=()=>{
- state.protein=Math.max(0,state.protein+Number(b.dataset.protein));
- save(); renderHealth();
+$$("[data-protein]").forEach(button => {
+  button.onclick = () => {
+    const health = getHealthData();
+    health.proteinValue = Math.max(
+      0,
+      health.proteinValue + Number(button.dataset.protein)
+    );
+    saveUnifiedHealth(health);
+    populateHealthFields(health);
+    refreshSharedViews();
+  };
 });
 
-$("#exercise").onchange=e=>{
- state.exercise=e.target.checked; save();
-};
+if ($("#exercise")) {
+  $("#exercise").onchange = event => {
+    const health = getHealthData();
+    health.exerciseComplete = event.target.checked;
+    saveUnifiedHealth(health);
+    populateHealthFields(health);
+    refreshSharedViews();
+  };
+}
 
 $("#billForm").onsubmit=e=>{
  e.preventDefault();
@@ -182,8 +344,6 @@ setInterval(clock,1000);
 
 
 // Flight Operations autosave
-const FLIGHT_OPERATIONS_KEY = "dragonflyLotusFlightOperations";
-
 const flightOperationIds = [
   "opsFlightNumber",
   "opsRoute",
@@ -238,9 +398,7 @@ if (document.readyState === "loading") {
 }
 
 
-// Health Dashboard autosave
-const HEALTH_STORAGE_KEY = "dragonflyLotusHealthDashboard";
-
+// Health Dashboard — one shared source of truth
 const healthIds = [
   "waterValue",
   "proteinValue",
@@ -250,13 +408,33 @@ const healthIds = [
   "healthNotes"
 ];
 
-function updateHealthProgress() {
-  const waterField = document.getElementById("waterValue");
-  const proteinField = document.getElementById("proteinValue");
-  const exerciseField = document.getElementById("exerciseComplete");
+function populateHealthFields(health = getSavedHealth()) {
+  healthIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (!field) return;
 
-  const water = Math.max(0, Number(waterField?.value || 0));
-  const protein = Math.max(0, Number(proteinField?.value || 0));
+    const value = health[id];
+
+    if (field.type === "checkbox") {
+      field.checked = Boolean(value);
+    } else {
+      field.value = value ?? "";
+    }
+  });
+
+  const originalWeight = document.getElementById("weight");
+  if (originalWeight && health.weightValue !== undefined) {
+    originalWeight.value = health.weightValue ?? "";
+  }
+
+  const originalExercise = document.getElementById("exercise");
+  if (originalExercise) {
+    originalExercise.checked = Boolean(health.exerciseComplete);
+  }
+}
+
+function updateHealthProgress(shouldRefreshDependents = true) {
+  const health = getHealthData();
 
   const waterDisplay = document.getElementById("waterDisplay");
   const proteinDisplay = document.getElementById("proteinDisplay");
@@ -264,87 +442,120 @@ function updateHealthProgress() {
   const proteinProgress = document.getElementById("proteinProgress");
   const status = document.getElementById("healthStatus");
 
-  if (waterDisplay) waterDisplay.textContent = water;
-  if (proteinDisplay) proteinDisplay.textContent = protein;
+  if (waterDisplay) waterDisplay.textContent = health.waterValue;
+  if (proteinDisplay) proteinDisplay.textContent = health.proteinValue;
 
   if (waterProgress) {
-    waterProgress.style.width = `${Math.min(100, (water / 128) * 100)}%`;
+    waterProgress.style.width =
+      `${Math.min(100, (health.waterValue / 128) * 100)}%`;
   }
 
   if (proteinProgress) {
-    proteinProgress.style.width = `${Math.min(100, (protein / 170) * 100)}%`;
+    proteinProgress.style.width =
+      `${Math.min(100, (health.proteinValue / 170) * 100)}%`;
   }
 
   if (status) {
-    if (water >= 128 && protein >= 170 && exerciseField?.checked) {
+    if (
+      health.waterValue >= 128 &&
+      health.proteinValue >= 170 &&
+      health.exerciseComplete
+    ) {
       status.textContent = "GOALS COMPLETE";
-    } else if (water > 0 || protein > 0 || exerciseField?.checked) {
+    } else if (
+      health.waterValue > 0 ||
+      health.proteinValue > 0 ||
+      health.exerciseComplete
+    ) {
       status.textContent = "IN PROGRESS";
     } else {
       status.textContent = "DAILY PROGRESS";
     }
   }
+
+  if (shouldRefreshDependents) {
+    renderHealth();
+    updateCaptainsBriefing();
+    updateCaptainRecommendations();
+    if (typeof updateMorningIntelligence === "function") {
+      updateMorningIntelligence();
+    }
+  }
 }
 
 function saveHealthDashboard() {
-  const saved = {};
-
-  healthIds.forEach(id => {
-    const field = document.getElementById(id);
-    if (!field) return;
-
-    saved[id] =
-      field.type === "checkbox"
-        ? field.checked
-        : field.value;
-  });
-
-  localStorage.setItem(
-    HEALTH_STORAGE_KEY,
-    JSON.stringify(saved)
-  );
-
+  const health = saveUnifiedHealth(getHealthData());
+  populateHealthFields(health);
   updateHealthProgress();
 }
 
 function initializeHealthDashboard() {
-  let saved = {};
+  const saved = getSavedHealth();
 
-  try {
-    saved = JSON.parse(
-      localStorage.getItem(HEALTH_STORAGE_KEY) || "{}"
-    );
-  } catch (error) {
-    console.warn("Health Dashboard could not be loaded.", error);
-  }
+  // Migrate whichever copy contains real information into both stores.
+  const mainHasHealth =
+    numberOrZero(state.water) > 0 ||
+    numberOrZero(state.protein) > 0 ||
+    Boolean(state.exercise) ||
+    Boolean(state.weight);
+
+  const savedHasHealth =
+    saved.waterValue > 0 ||
+    saved.proteinValue > 0 ||
+    saved.exerciseComplete ||
+    Boolean(saved.weightValue) ||
+    Boolean(saved.sleepValue) ||
+    Boolean(saved.healthNotes);
+
+  const initial = savedHasHealth
+    ? saved
+    : {
+        ...saved,
+        waterValue: numberOrZero(state.water),
+        proteinValue: numberOrZero(state.protein),
+        weightValue: state.weight ?? "",
+        exerciseComplete: Boolean(state.exercise)
+      };
+
+  saveUnifiedHealth(initial);
+  populateHealthFields(initial);
 
   healthIds.forEach(id => {
     const field = document.getElementById(id);
-    if (!field) return;
+    if (!field || field.dataset.healthBound === "true") return;
 
-    if (field.type === "checkbox") {
-      field.checked = Boolean(saved[id]);
-    } else {
-      field.value = saved[id] || "";
-    }
-
+    field.dataset.healthBound = "true";
     field.addEventListener("input", saveHealthDashboard);
     field.addEventListener("change", saveHealthDashboard);
   });
+
+  const originalWeight = document.getElementById("weight");
+  if (originalWeight && originalWeight.dataset.healthBound !== "true") {
+    originalWeight.dataset.healthBound = "true";
+    originalWeight.addEventListener("input", event => {
+      const health = getHealthData();
+      health.weightValue = event.target.value;
+      saveUnifiedHealth(health);
+      populateHealthFields(health);
+      refreshSharedViews();
+    });
+  }
 
   updateHealthProgress();
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeHealthDashboard, { once: true });
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeHealthDashboard,
+    { once: true }
+  );
 } else {
   initializeHealthDashboard();
 }
 
 
 // Countdown Center
-const COUNTDOWN_STORAGE_KEY = "dragonflyLotusCountdowns";
-
 function loadCountdowns() {
   try {
     const saved = JSON.parse(
@@ -569,8 +780,6 @@ if (document.readyState === "loading") {
 
 
 // Dragonfly Bliss autosave
-const BLISS_STORAGE_KEY = "dragonflyLotusBliss";
-
 const blissFieldIds = [
   "blissHome",
   "blissHomeDone",
@@ -706,7 +915,7 @@ function captainTime(value) {
 
 function updateCaptainsBriefing() {
   const state = readCaptainStorage("dragonfly-lotus-v1", {});
-  const health = readCaptainStorage("dragonflyLotusHealthDashboard", {});
+  const health = getHealthData();
   const flight = readCaptainStorage("dragonflyLotusFlightOperations", {});
   const countdowns = readCaptainStorage("dragonflyLotusCountdowns", []);
   const bliss = readCaptainStorage("dragonflyLotusBliss", {});
@@ -819,7 +1028,7 @@ function updateCaptainRecommendations() {
   if (!list) return;
 
   const state = recommendationsReadStorage("dragonfly-lotus-v1", {});
-  const health = recommendationsReadStorage("dragonflyLotusHealthDashboard", {});
+  const health = getHealthData();
   const flight = recommendationsReadStorage("dragonflyLotusFlightOperations", {});
   const countdowns = recommendationsReadStorage("dragonflyLotusCountdowns", []);
   const bliss = recommendationsReadStorage("dragonflyLotusBliss", {});
@@ -1003,3 +1212,21 @@ if (document.readyState === "loading") {
 } else {
   initializeCaptainRecommendations();
 }
+
+
+// Synchronize open tabs/windows on the same device.
+window.addEventListener("storage", event => {
+  if (
+    event.key === KEY ||
+    event.key === HEALTH_STORAGE_KEY ||
+    event.key === FLIGHT_OPERATIONS_KEY ||
+    event.key === COUNTDOWN_STORAGE_KEY ||
+    event.key === BLISS_STORAGE_KEY
+  ) {
+    state = { ...defaults, ...readStorage(KEY, {}) };
+    populateHealthFields(getSavedHealth());
+    refreshSharedViews();
+    renderCountdowns();
+    updateDragonflyBlissStatus();
+  }
+});
