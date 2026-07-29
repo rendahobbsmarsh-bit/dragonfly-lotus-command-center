@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V7.3 — Connected Intelligence",
+  "name": "DragonFly Lotus V7.4 — Connected Intelligence",
   "short_name": "DragonFly Lotus",
-  "description": "Reliable first cloud mirror with bounded database requests, automatic first upload, and non-blocking realtime startup.",
+  "description": "Stops the cloud synchronization reload loop while preserving live cross-device updates.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

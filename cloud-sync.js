@@ -1,4 +1,4 @@
-/* DragonFly Lotus V7.3 — First Mirror Handshake */
+/* DragonFly Lotus V7.4 — Stop Reload Loop */
 (() => {
   "use strict";
 
@@ -323,6 +323,18 @@
     setAuthMessage(message, mode);
   }
 
+  function refreshAfterCloudApply() {
+    renderAccount();
+    renderSyncMeta();
+    renderLog();
+
+    // Tell the rest of DragonFly Lotus that shared data changed without
+    // reloading the page and restarting the synchronization handshake.
+    window.dispatchEvent(new CustomEvent("dragonfly:data-changed", {
+      detail: { source: "cloud" }
+    }));
+  }
+
   function renderAccount() {
     const label=document.getElementById("cloudAccountLabel");
     const detail=document.getElementById("cloudAccountDetail");
@@ -590,6 +602,7 @@
       setCloudState("connected");
       setAuthMessage("Signed in. DragonFly Cloud is connected.", "success");
       addLog(`${reason} completed.`);
+      refreshAfterCloudApply();
     } catch (error) {
       const classified = classifyCloudError(error);
       state.databaseReady = classified.kind === "database-missing" ? false : state.databaseReady;
@@ -626,8 +639,7 @@
     state.databaseReady = true;
     setCloudState("connected");
     addLog(`${reason} received from another device.`);
-    renderSyncMeta();
-    setTimeout(() => location.reload(), 500);
+    refreshAfterCloudApply();
   }
 
   async function synchronize(reason = "Manual synchronization") {
@@ -671,10 +683,7 @@
       setCloudState("connected");
       setAuthMessage("Signed in. DragonFly Cloud is connected.", "success");
       addLog(`${reason}: cloud copy restored to this device.`);
-      renderSyncMeta();
-
-      // Reload only after the successful state is visible.
-      setTimeout(() => location.reload(), 900);
+      refreshAfterCloudApply();
     } catch (error) {
       const classified = classifyCloudError(error);
       state.databaseReady =

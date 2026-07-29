@@ -1,34 +1,32 @@
-# DragonFly Lotus V7.3 — First Mirror Handshake
+# DragonFly Lotus V7.4 — Stop Reload Loop
 
-This patch fixes the Cloud page remaining on:
+V7.3 completed the first cloud handshake, but reloaded the page every time cloud
+data was applied. The reload restarted sign-in synchronization and created a loop.
 
-`Signed in. Checking the DragonFly data mirror…`
+## Correction
 
-## Corrections
-
-- The first database request now has a 10-second timeout.
-- An empty cloud automatically receives the current device as the first master copy.
-- Realtime listening starts only after the first read/write succeeds.
-- Realtime startup cannot hold the sign-in screen indefinitely.
-- First-mirror progress messages explain what DragonFly Lotus is doing.
-- Successful completion displays `Cloud connected`.
-- A timeout provides a retry message instead of spinning forever.
-- Visible version marker is V7.3.
+- Removes automatic `location.reload()` after cloud restoration
+- Removes automatic reload after realtime updates
+- Refreshes the DragonFly interface in place
+- Keeps the cloud session and synchronization process stable
+- Preserves realtime Mac, iPhone, and iPad updates
+- Visible version marker is V7.4
 
 ## Install
 
 ```bash
-unzip -o DragonFly_Lotus_v7_3_First_Mirror_Handshake.zip
+unzip -o DragonFly_Lotus_v7_4_Stop_Reload_Loop.zip
 git add .
-git commit -m "DragonFly Lotus V7.3 - First mirror handshake"
+git commit -m "DragonFly Lotus V7.4 - Stop cloud reload loop"
 git push
 ```
 
 After deployment:
 
-1. Reload the permanent site with Command + Shift + R.
-2. Confirm the badge says V7.3.
-3. Open Cloud and sign in.
-4. Wait up to 10 seconds.
-5. The first device should upload automatically and display `Cloud connected`.
-6. Sign in on the other devices with the same account.
+1. Close the looping DragonFly tab or app.
+2. Wait for GitHub Actions to turn green.
+3. Open the permanent site again.
+4. Hard refresh once with Command + Shift + R.
+5. Confirm V7.4.
+6. Open Cloud and allow up to 10 seconds for the first mirror.
+7. The page should remain steady and display Cloud connected.
