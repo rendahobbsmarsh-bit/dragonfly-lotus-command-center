@@ -1,37 +1,41 @@
-# DragonFly Lotus V7.1 — Cloud Initialization Patch
+# DragonFly Lotus V7.2 — Cloud State Correction
 
-This patch fixes the Cloud page crash:
+This correction separates three different conditions that V7.1 previously
+combined:
 
-`Cannot read properties of null (reading 'length')`
+1. Supabase configuration saved
+2. Account signed in
+3. Database mirror operational
 
-## Fixes
+## What changes
 
-- Safely handles an empty Cloud Activity Log
-- Prevents the Cloud setup process from stopping during page load
-- Accepts Supabase `sb_publishable_...` browser keys
-- Rejects `sb_secret_...` and service-role keys
-- Refuses to initialize if a secret key was saved accidentally
-- Prevents the service worker from trying to cache Chrome-extension requests
-- Updates the visible badge to V7.1
+- A successful sign-in no longer falsely claims the data mirror is finished.
+- Missing database setup now says:
+  `Signed in • Database setup required`
+- Missing Row Level Security policies now say:
+  `Signed in • Security setup required`
+- Offline status preserves the fact that the account is signed in.
+- A successful data read/write changes the header to:
+  `Cloud connected`
+- Specific setup guidance remains visible instead of being overwritten.
+- `DragonFlyCloud.status()` is available in the browser console for diagnostics.
+- Visible version marker is V7.2.
 
 ## Install
 
 ```bash
-unzip -o DragonFly_Lotus_v7_1_Cloud_Initialization_Patch.zip
+unzip -o DragonFly_Lotus_v7_2_Cloud_State_Correction.zip
 git add .
-git commit -m "DragonFly Lotus V7.1 - Cloud initialization patch"
+git commit -m "DragonFly Lotus V7.2 - Cloud state correction"
 git push
 ```
 
-After the deployment turns green:
+After deployment:
 
-1. Reload the permanent site with Command + Shift + R.
-2. Open Cloud.
-3. If the app reports an unsafe key, click **Remove Configuration**.
-4. Save the Supabase Project URL and the full `sb_publishable_...` key.
-5. Create or sign into the account.
-
-## Security warning
-
-Never place an `sb_secret_...` or service-role key in DragonFly Lotus.
-Those keys are server-only and bypass Row Level Security.
+1. Reload with Command + Shift + R.
+2. Sign in.
+3. Read the exact Cloud status.
+4. If it says database setup required, run `SUPABASE_SETUP.sql` in Supabase.
+5. Select Synchronize Now.
+6. When it says Cloud connected, sign into the other devices and begin the
+   one-week field test.

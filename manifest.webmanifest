@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V7.1 — Connected Intelligence",
+  "name": "DragonFly Lotus V7.2 — Connected Intelligence",
   "short_name": "DragonFly Lotus",
-  "description": "Cloud initialization reliability and browser-safe Supabase key validation patch.",
+  "description": "Correct cloud state reporting for authenticated, configured, database-ready, offline, and setup-required conditions.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

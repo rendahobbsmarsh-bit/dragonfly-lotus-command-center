@@ -1,0 +1,4 @@
+unzip -o DragonFly_Lotus_v7_2_Cloud_State_Correction.zip
+git add .
+git commit -m "DragonFly Lotus V7.2 - Cloud state correction"
+git push

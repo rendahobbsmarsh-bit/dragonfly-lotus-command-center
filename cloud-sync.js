@@ -1,4 +1,4 @@
-/* DragonFly Lotus V7.1 — Cloud Initialization Patch */
+/* DragonFly Lotus V7.2 — Cloud State Correction */
 (() => {
   "use strict";
 
@@ -22,7 +22,9 @@
     applyingRemote: false,
     pendingPush: false,
     debounceTimer: null,
-    lastRemoteUpdatedAt: null
+    lastRemoteUpdatedAt: null,
+    databaseReady: null,
+    lastError: null
   };
 
   const originalSetItem = Storage.prototype.setItem;
@@ -182,6 +184,114 @@
     if (mode) element.classList.add(`is-${mode}`);
   }
 
+  function classifyCloudError(error) {
+    const code = String(error?.code || "");
+    const message = String(error?.message || error || "");
+    const lower = message.toLowerCase();
+
+    if (
+      code === "42P01" ||
+      code === "PGRST205" ||
+      lower.includes("dragonfly_cloud_state") &&
+      (lower.includes("not find") || lower.includes("does not exist") || lower.includes("schema cache"))
+    ) {
+      return {
+        kind: "database-missing",
+        headline: "Signed in • Database setup required",
+        message: "Your account connection works. Run SUPABASE_SETUP.sql once in Supabase SQL Editor to activate mirroring."
+      };
+    }
+
+    if (
+      code === "42501" ||
+      lower.includes("row-level security") ||
+      lower.includes("permission denied")
+    ) {
+      return {
+        kind: "security-policy",
+        headline: "Signed in • Security setup required",
+        message: "Authentication works, but the database security policies are missing or incomplete. Run SUPABASE_SETUP.sql again."
+      };
+    }
+
+    if (
+      lower.includes("failed to fetch") ||
+      lower.includes("network") ||
+      lower.includes("load failed")
+    ) {
+      return {
+        kind: "network",
+        headline: "Signed in • Waiting for internet",
+        message: "Your account remains connected. Lotus will retry mirroring when the connection is available."
+      };
+    }
+
+    return {
+      kind: "unknown",
+      headline: "Signed in • Mirror needs attention",
+      message: message || "The account connection works, but the data mirror could not finish."
+    };
+  }
+
+  function setCloudState(kind, detail = "") {
+    state.lastError = kind.includes("error") || kind.includes("required") ? detail : null;
+
+    if (!state.configured) {
+      setStatus("Cloud not configured");
+      return;
+    }
+
+    if (!state.user) {
+      setStatus("Configured • Sign in required");
+      return;
+    }
+
+    if (kind === "syncing") {
+      setStatus("Signed in • Synchronizing…", "syncing");
+      return;
+    }
+
+    if (kind === "connected") {
+      setStatus("Cloud connected", "connected");
+      return;
+    }
+
+    if (kind === "database-required") {
+      setStatus("Signed in • Database setup required", "error");
+      return;
+    }
+
+    if (kind === "security-required") {
+      setStatus("Signed in • Security setup required", "error");
+      return;
+    }
+
+    if (kind === "offline") {
+      setStatus("Signed in • Offline changes waiting", "syncing");
+      return;
+    }
+
+    setStatus("Signed in • Mirror needs attention", "error");
+  }
+
+  function showCloudSetupGuidance(classified) {
+    const headline = document.getElementById("cloudSyncHeadline");
+    const last = document.getElementById("cloudLastSync");
+    if (headline) headline.textContent = classified.headline;
+    if (last) last.textContent = classified.message;
+    setAuthMessage(classified.message, classified.kind === "network" ? "" : "error");
+
+    if (classified.kind === "database-missing") {
+      setCloudState("database-required", classified.message);
+    } else if (classified.kind === "security-policy") {
+      setCloudState("security-required", classified.message);
+    } else if (classified.kind === "network") {
+      setCloudState("offline", classified.message);
+    } else {
+      setCloudState("error", classified.message);
+    }
+  }
+
   function renderAccount() {
     const label=document.getElementById("cloudAccountLabel");
     const detail=document.getElementById("cloudAccountDetail");
@@ -209,17 +319,26 @@
     const current = meta();
     const headline = document.getElementById("cloudSyncHeadline");
     const last = document.getElementById("cloudLastSync");
+
+    if (state.user && state.databaseReady === false) {
+      if (headline) headline.textContent = "Signed in • Database setup required";
+      if (last) last.textContent = "Run SUPABASE_SETUP.sql once in Supabase SQL Editor, then return and select Synchronize Now.";
+      return;
+    }
+
     if (headline) {
       headline.textContent = current.dirty
         ? "This device has changes waiting to mirror."
-        : state.user
+        : state.user && state.databaseReady
           ? "This device and cloud are aligned."
-          : "Local data is safe on this device.";
+          : state.user
+            ? "Signed in. Checking the data mirror."
+            : "Local data is safe on this device.";
     }
     if (last) {
       last.textContent = current.lastSyncedAt
         ? `Last synchronized ${new Date(current.lastSyncedAt).toLocaleString()}.`
-        : "No cloud synchronization yet.";
+        : "No successful cloud synchronization yet.";
     }
   }
 
@@ -321,8 +440,8 @@
       return;
     }
 
-    setStatus("Cloud connected", "connected");
-    setAuthMessage("Signed in. DragonFly Cloud is ready.", "success");
+    setCloudState("syncing");
+    setAuthMessage("Signed in. Checking the DragonFly data mirror…", "success");
     addLog(`Signed in as ${state.user.email || "your account"}.`);
     await subscribeRealtime();
     await synchronize("Sign-in synchronization");
@@ -357,6 +476,7 @@
       .maybeSingle();
 
     if (error) throw error;
+    state.databaseReady = true;
     return data || null;
   }
 
@@ -365,13 +485,13 @@
     if (!navigator.onLine) {
       state.pendingPush = true;
       saveMeta({ dirty: true });
-      setStatus("Offline • Changes waiting", "syncing");
+      setCloudState("offline");
       renderSyncMeta();
       return;
     }
 
     state.syncing = true;
-    setStatus("Mirroring changes…", "syncing");
+    setCloudState("syncing");
     try {
       const currentMeta = meta();
       const remote = await fetchRemote();
@@ -397,11 +517,14 @@
         lastRemoteUpdatedAt: data.updated_at
       });
       state.pendingPush = false;
-      setStatus("Cloud mirrored", "connected");
+      state.databaseReady = true;
+      setCloudState("connected");
       addLog(`${reason} completed.`);
     } catch (error) {
-      setStatus("Cloud mirror needs attention", "error");
-      addLog(error.message || "Cloud upload failed.", "error");
+      const classified = classifyCloudError(error);
+      state.databaseReady = classified.kind === "database-missing" ? false : state.databaseReady;
+      showCloudSetupGuidance(classified);
+      addLog(classified.message, "error");
       console.error("DragonFly Cloud push failed:", error);
     } finally {
       state.syncing = false;
@@ -430,7 +553,8 @@
     }
 
     applyPayload(remote.payload, remote.updated_at);
-    setStatus("Cloud update received", "connected");
+    state.databaseReady = true;
+    setCloudState("connected");
     addLog(`${reason} received from another device.`);
     renderSyncMeta();
     setTimeout(() => location.reload(), 500);
@@ -439,13 +563,13 @@
   async function synchronize(reason = "Manual synchronization") {
     if (!state.client || !state.user || state.syncing) return;
     if (!navigator.onLine) {
-      setStatus("Offline • Local mode", "syncing");
+      setCloudState("offline");
       state.pendingPush = true;
       return;
     }
 
     state.syncing = true;
-    setStatus("Comparing device and cloud…", "syncing");
+    setCloudState("syncing");
     try {
       const remote = await fetchRemote();
       if (!remote) {
@@ -462,13 +586,16 @@
       }
 
       applyPayload(remote.payload, remote.updated_at);
-      setStatus("Cloud mirrored", "connected");
+      state.databaseReady = true;
+      setCloudState("connected");
       addLog(`${reason}: cloud copy restored to this device.`);
       renderSyncMeta();
       setTimeout(() => location.reload(), 500);
     } catch (error) {
-      setStatus("Cloud mirror needs attention", "error");
-      addLog(error.message || "Synchronization failed.", "error");
+      const classified = classifyCloudError(error);
+      state.databaseReady = classified.kind === "database-missing" ? false : state.databaseReady;
+      showCloudSetupGuidance(classified);
+      addLog(classified.message, "error");
       console.error("DragonFly Cloud sync failed:", error);
     } finally {
       state.syncing = false;
@@ -548,7 +675,8 @@
     if (state.client) await state.client.auth.signOut();
     state.user = null;
     state.session = null;
-    setStatus("Configured • Signed out");
+    state.databaseReady = null;
+    setCloudState("signed-out");
     setAuthMessage("Signed out. Local data remains on this device.", "success");
     addLog("Signed out of DragonFly Cloud.");
     renderAccount();
@@ -578,7 +706,7 @@
       if (state.user) synchronize("Connection restored");
     });
     window.addEventListener("offline", () => {
-      setStatus("Offline • Local mode", "syncing");
+      setCloudState("offline");
       addLog("Offline mode active. Changes will wait on this device.");
     });
 
@@ -614,6 +742,15 @@
     synchronize,
     pushLocal,
     collectPayload,
-    createSafetyBackup
+    createSafetyBackup,
+    status: () => ({
+      configured: state.configured,
+      signedIn: Boolean(state.user),
+      email: state.user?.email || null,
+      databaseReady: state.databaseReady,
+      syncing: state.syncing,
+      lastError: state.lastError,
+      meta: meta()
+    })
   };
 })();
