@@ -1,4 +1,4 @@
-const CACHE_NAME = "dragonfly-lotus-v7-0-connected-intelligence";
+const CACHE_NAME = "dragonfly-lotus-v7-1-cloud-initialization";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -31,14 +31,33 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
+  const requestUrl = new URL(event.request.url);
+  if (!["http:", "https:"].includes(requestUrl.protocol)) return;
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        if (
+          response &&
+          response.ok &&
+          response.type !== "opaque" &&
+          requestUrl.origin === self.location.origin
+        ) {
+          const copy = response.clone();
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy))
+          );
+        }
         return response;
       })
-      .catch(() => caches.match(event.request)
-        .then(cached => cached || caches.match("./index.html")))
+      .catch(() =>
+        caches.match(event.request).then(cached => {
+          if (cached) return cached;
+          if (event.request.mode === "navigate") {
+            return caches.match("./index.html");
+          }
+          return Response.error();
+        })
+      )
   );
 });

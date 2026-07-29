@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V7 — Connected Intelligence",
+  "name": "DragonFly Lotus V7.1 — Connected Intelligence",
   "short_name": "DragonFly Lotus",
-  "description": "Secure local-first personal OS with email/password cloud mirroring and connected intelligence.",
+  "description": "Cloud initialization reliability and browser-safe Supabase key validation patch.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

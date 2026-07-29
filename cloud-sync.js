@@ -1,4 +1,4 @@
-/* DragonFly Lotus V7 — Email/Password Connected Intelligence */
+/* DragonFly Lotus V7.1 — Cloud Initialization Patch */
 (() => {
   "use strict";
 
@@ -43,11 +43,18 @@
   }
 
   function safeJSON(raw, fallback) {
-    try { return JSON.parse(raw); } catch { return fallback; }
+    if (raw === null || raw === undefined || raw === "") return fallback;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed === null || parsed === undefined ? fallback : parsed;
+    } catch {
+      return fallback;
+    }
   }
 
   function config() {
-    return safeJSON(localStorage.getItem(CONFIG_KEY), {});
+    const saved = safeJSON(localStorage.getItem(CONFIG_KEY), {});
+    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
   }
 
   function meta() {
@@ -115,7 +122,8 @@
   }
 
   function addLog(message, type = "info") {
-    const entries = safeJSON(localStorage.getItem(LOG_KEY), []);
+    const storedEntries = safeJSON(localStorage.getItem(LOG_KEY), []);
+    const entries = Array.isArray(storedEntries) ? storedEntries : [];
     entries.unshift({
       id: id(),
       at: new Date().toISOString(),
@@ -130,7 +138,8 @@
   function renderLog() {
     const container = document.getElementById("cloudActivityLog");
     if (!container) return;
-    const entries = safeJSON(localStorage.getItem(LOG_KEY), []);
+    const storedEntries = safeJSON(localStorage.getItem(LOG_KEY), []);
+    const entries = Array.isArray(storedEntries) ? storedEntries : [];
     container.innerHTML = "";
     if (!entries.length) {
       const empty = document.createElement("p");
@@ -245,6 +254,22 @@
 
   async function initializeClient() {
     const saved = config();
+    const savedKey = String(saved.anonKey || "");
+    const savedSecret =
+      savedKey.startsWith("sb_secret_") ||
+      savedKey.toLowerCase().includes("service_role");
+
+    if (savedSecret) {
+      state.configured = false;
+      setStatus("Unsafe key must be removed", "error");
+      setAuthMessage(
+        "A secret/server key was detected. Click Remove Configuration, rotate that secret in Supabase, then save the sb_publishable_ key.",
+        "error"
+      );
+      renderAccount();
+      return;
+    }
+
     state.configured = Boolean(saved.url && saved.anonKey);
     renderAccount();
 
@@ -454,8 +479,27 @@
   async function saveConfiguration() {
     const url = document.getElementById("cloudProjectUrl")?.value.trim() || "";
     const anonKey = document.getElementById("cloudAnonKey")?.value.trim() || "";
-    if (!/^https:\/\/.+\.supabase\.co\/?$/.test(url) || anonKey.length < 40) {
-      setAuthMessage("Please enter a valid Supabase Project URL and anon key.", "error");
+    const validUrl = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url);
+    const isPublishableKey = anonKey.startsWith("sb_publishable_");
+    const isLegacyAnonKey = anonKey.startsWith("eyJ") && anonKey.length > 80;
+    const isSecretKey =
+      anonKey.startsWith("sb_secret_") ||
+      anonKey.toLowerCase().includes("service_role");
+
+    if (isSecretKey) {
+      setAuthMessage(
+        "Stop: this is a secret/server key. Remove it and use the sb_publishable_ key.",
+        "error"
+      );
+      setStatus("Unsafe key rejected", "error");
+      return;
+    }
+
+    if (!validUrl || (!isPublishableKey && !isLegacyAnonKey)) {
+      setAuthMessage(
+        "Enter your https://…supabase.co Project URL and the full sb_publishable_ key.",
+        "error"
+      );
       return;
     }
     originalSetItem.call(localStorage, CONFIG_KEY, JSON.stringify({

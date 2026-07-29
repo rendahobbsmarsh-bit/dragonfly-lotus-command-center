@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#171424" name="theme-color"/>
-<title>DragonFly Lotus V7 — Connected Intelligence</title>
+<title>DragonFly Lotus V7.1 — Cloud Initialization Patch</title>
 <meta content="DragonFly Lotus V7 — secure email/password cloud mirroring and connected intelligence." name="description"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -22,7 +22,7 @@
 <h1>Command Center</h1>
 </div>
 <div aria-label="System status" class="system-status-strip" id="systemStatusStrip">
-<span class="version-chip">V7.0</span>
+<span class="version-chip">V7.1</span>
 <span class="system-status" id="saveStatus">Saved on this device</span>
 <span class="system-status" id="connectionStatus">Checking connection…</span>
 <span class="system-status cloud-header-status" id="cloudHeaderStatus">Cloud not connected</span></div><div class="clock-block">
@@ -596,14 +596,14 @@ Notes: SEA overnight"></textarea>
 <details class="cloud-setup" id="cloudSetupDetails" open="">
 <summary>Cloud setup</summary>
 <p class="intelligence-context">
-          Paste the Project URL and public anon key from your Supabase project. These identify your project; the anon key is designed for browser apps and your private rows are protected by sign-in and Row Level Security.
+          Paste the Project URL and browser-safe publishable key from your Supabase project. These identify your project; the anon key is designed for browser apps and your private rows are protected by sign-in and Row Level Security.
         </p>
 <div class="form-grid cloud-config-grid">
 <label class="wide">Supabase Project URL
             <input autocomplete="off" id="cloudProjectUrl" placeholder="https://your-project.supabase.co" type="url"/>
 </label>
-<label class="wide">Supabase Anon Key
-            <textarea autocomplete="off" id="cloudAnonKey" placeholder="Paste the public anon key" rows="4"></textarea>
+<label class="wide">Supabase Publishable Key
+            <textarea autocomplete="off" id="cloudAnonKey" placeholder="Paste the sb_publishable_ key" rows="4"></textarea>
 </label>
 <button id="cloudSaveConfigButton" type="button">Save Cloud Configuration</button>
 <button class="quiet-button" id="cloudClearConfigButton" type="button">Remove Configuration</button>
