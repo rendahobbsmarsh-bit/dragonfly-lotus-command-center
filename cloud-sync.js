@@ -1,4 +1,4 @@
-/* DragonFly Lotus V6 — Local-first Supabase Cloud Mirror */
+/* DragonFly Lotus V7 — Email/Password Connected Intelligence */
 (() => {
   "use strict";
 
@@ -174,23 +174,25 @@
   }
 
   function renderAccount() {
-    const label = document.getElementById("cloudAccountLabel");
-    const detail = document.getElementById("cloudAccountDetail");
-    const signOut = document.getElementById("cloudSignOutButton");
-    const syncNow = document.getElementById("cloudSyncNowButton");
-
-    if (state.user) {
-      if (label) label.textContent = state.user.email || "Signed in";
-      if (detail) detail.textContent = "This identity owns the private cloud row used by your devices.";
-      if (signOut) signOut.hidden = false;
-      if (syncNow) syncNow.disabled = false;
+    const label=document.getElementById("cloudAccountLabel");
+    const detail=document.getElementById("cloudAccountDetail");
+    const signOut=document.getElementById("cloudSignOutButton");
+    const syncNow=document.getElementById("cloudSyncNowButton");
+    const create=document.getElementById("cloudCreateAccountButton");
+    const signInButton=document.getElementById("cloudSignInButton");
+    const card=document.querySelector(".cloud-auth-card");
+    if(state.user){
+      if(label) label.textContent=state.user.email||"Signed in";
+      if(detail) detail.textContent="This private account owns the cloud memory shared by your devices.";
+      if(signOut) signOut.hidden=false; if(syncNow) syncNow.disabled=false;
+      if(create) create.hidden=true; if(signInButton) signInButton.hidden=true;
+      card?.classList.add("is-signed-in");
     } else {
-      if (label) label.textContent = state.configured ? "Configuration saved — sign in next" : "Not signed in";
-      if (detail) detail.textContent = state.configured
-        ? "Use the same email on every DragonFly Lotus device."
-        : "Connect your private Supabase project, then sign in by email.";
-      if (signOut) signOut.hidden = true;
-      if (syncNow) syncNow.disabled = true;
+      if(label) label.textContent=state.configured?"Configuration saved — sign in next":"Not signed in";
+      if(detail) detail.textContent=state.configured?"Create the account once, then use the same email and password on every device.":"Connect your private Supabase project, then create your account.";
+      if(signOut) signOut.hidden=true; if(syncNow) syncNow.disabled=true;
+      if(create) create.hidden=false; if(signInButton) signInButton.hidden=false;
+      card?.classList.remove("is-signed-in");
     }
   }
 
@@ -474,31 +476,28 @@
     setTimeout(() => location.reload(), 400);
   }
 
-  async function signIn() {
-    if (!state.client) {
-      setAuthMessage("Save the cloud configuration first.", "error");
-      return;
-    }
-    const email = document.getElementById("cloudEmail")?.value.trim() || "";
-    if (!email.includes("@")) {
-      setAuthMessage("Enter the email you will use on every device.", "error");
-      return;
-    }
-    setAuthMessage("Sending your secure sign-in link…");
-    const { error } = await state.client.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${location.origin}${location.pathname}#cloud`
-      }
-    });
-    if (error) {
-      setAuthMessage(error.message, "error");
-      addLog(`Sign-in link failed: ${error.message}`, "error");
-      return;
-    }
-    originalSetItem.call(localStorage, "dragonflyLotusCloudEmail", email);
-    setAuthMessage("Check your email and open the sign-in link on this device.", "success");
-    addLog(`Secure sign-in link sent to ${email}.`);
+  function authCredentials(){return {email:document.getElementById("cloudEmail")?.value.trim()||"",password:document.getElementById("cloudPassword")?.value||""};}
+  function validateCredentials(c,needPassword=true){if(!c.email.includes("@")){setAuthMessage("Enter the email you will use on every device.","error");return false;}if(needPassword&&c.password.length<8){setAuthMessage("Use a password with at least 8 characters.","error");return false;}return true;}
+  async function createAccount(){
+    if(!state.client){setAuthMessage("Save the cloud configuration first.","error");return;}
+    const c=authCredentials(); if(!validateCredentials(c)) return; setAuthMessage("Creating your private DragonFly account…");
+    const {data,error}=await state.client.auth.signUp({email:c.email,password:c.password,options:{emailRedirectTo:`${location.origin}${location.pathname}#cloud`,data:{display_name:"Captain Ren",app:"DragonFly Lotus"}}});
+    if(error){setAuthMessage(error.message,"error");addLog(`Account creation failed: ${error.message}`,"error");return;}
+    originalSetItem.call(localStorage,"dragonflyLotusCloudEmail",c.email);
+    if(data.session){setAuthMessage("Account created and signed in. Preparing your first cloud mirror…","success");addLog(`DragonFly account created for ${c.email}.`);await handleSession(data.session);}else{setAuthMessage("Account created. Check your email to confirm, then return and sign in.","success");addLog(`Confirmation email sent to ${c.email}.`);}
+  }
+  async function signIn(){
+    if(!state.client){setAuthMessage("Save the cloud configuration first.","error");return;}
+    const c=authCredentials(); if(!validateCredentials(c)) return; setAuthMessage("Signing in…");
+    const {data,error}=await state.client.auth.signInWithPassword(c);
+    if(error){setAuthMessage("The email or password was not accepted. Check both and try again.","error");addLog(`Sign-in failed: ${error.message}`,"error");return;}
+    originalSetItem.call(localStorage,"dragonflyLotusCloudEmail",c.email);setAuthMessage("Signed in. Comparing this device with DragonFly Cloud…","success");await handleSession(data.session);
+  }
+  async function requestPasswordReset(){
+    if(!state.client){setAuthMessage("Save the cloud configuration first.","error");return;}
+    const c=authCredentials(); if(!validateCredentials(c,false)) return; setAuthMessage("Sending password-reset instructions…");
+    const {error}=await state.client.auth.resetPasswordForEmail(c.email,{redirectTo:`${location.origin}${location.pathname}#cloud`});
+    if(error){setAuthMessage(error.message,"error");return;}setAuthMessage("Check your email for the password-reset link.","success");
   }
 
   async function signOut() {
@@ -514,13 +513,17 @@
   function bindUI() {
     document.getElementById("cloudSaveConfigButton")?.addEventListener("click", saveConfiguration);
     document.getElementById("cloudClearConfigButton")?.addEventListener("click", clearConfiguration);
+    document.getElementById("cloudCreateAccountButton")?.addEventListener("click", createAccount);
     document.getElementById("cloudSignInButton")?.addEventListener("click", signIn);
+    document.getElementById("cloudForgotPasswordButton")?.addEventListener("click", requestPasswordReset);
     document.getElementById("cloudSignOutButton")?.addEventListener("click", signOut);
     document.getElementById("cloudSyncNowButton")?.addEventListener("click", () => synchronize());
     document.getElementById("cloudClearLogButton")?.addEventListener("click", () => {
       originalSetItem.call(localStorage, LOG_KEY, JSON.stringify([]));
       renderLog();
     });
+
+    document.getElementById("cloudPassword")?.addEventListener("keydown", event => { if(event.key === "Enter") signIn(); });
 
     const email = localStorage.getItem("dragonflyLotusCloudEmail");
     const emailField = document.getElementById("cloudEmail");

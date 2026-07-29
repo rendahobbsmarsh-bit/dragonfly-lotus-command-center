@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V6 — Cloud Mirror",
+  "name": "DragonFly Lotus V7 — Connected Intelligence",
   "short_name": "DragonFly Lotus",
-  "description": "Captain Ren’s local-first personal operating system with secure cross-device cloud mirroring.",
+  "description": "Secure local-first personal OS with email/password cloud mirroring and connected intelligence.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

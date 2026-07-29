@@ -1,0 +1,4 @@
+unzip -o DragonFly_Lotus_v7_0_Connected_Intelligence.zip
+git add .
+git commit -m "DragonFly Lotus V7.0 - Connected Intelligence"
+git push

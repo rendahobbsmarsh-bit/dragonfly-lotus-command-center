@@ -933,3 +933,10 @@ body.workspace-log .workspace-nav {
     grid-template-columns: 1fr;
   }
 }
+
+/* V7.0 Connected Intelligence */
+.v7-auth-card label{display:grid;gap:.35rem;color:var(--muted)}
+.cloud-auth-button-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
+#connectedIntelligenceCard{border-color:rgba(83,197,190,.35);background:linear-gradient(145deg,rgba(83,197,190,.07),rgba(214,173,97,.035)),rgba(255,255,255,.02)}
+.cloud-auth-card.is-signed-in{border-color:rgba(83,197,190,.46);box-shadow:0 0 0 2px rgba(83,197,190,.07)}
+@media(max-width:620px){.cloud-auth-button-row{grid-template-columns:1fr}}

@@ -2693,3 +2693,8 @@ if (document.readyState === "loading") {
 } else {
   initializeV5();
 }
+
+
+// V7.0 Connected Intelligence
+function updateConnectedIntelligence(){const h=document.getElementById("connectedIntelligenceHeadline"),d=document.getElementById("connectedIntelligenceText");if(!h||!d)return;const health=typeof loadCanonicalHealth==="function"?loadCanonicalHealth():{};const missions=typeof missionAll==="function"?missionAll():[];const entries=typeof journalEntries!=="undefined"&&Array.isArray(journalEntries)?journalEntries:[];const notes=[];if(Number(health.waterValue||0)>=64)notes.push("Water has reached the halfway mark.");if(Number(health.proteinValue||0)>=85)notes.push("Protein has reached the halfway mark.");if(health.exerciseComplete)notes.push("Movement is complete.");if(missions.length)notes.push(`${missions.length} mission${missions.length===1?"":"s"} are held in Flight Deck.`);if(entries.length)notes.push(`${entries.length} Captain’s Log entr${entries.length===1?"y is":"ies are"} part of your memory.`);if(!notes.length){h.textContent="Connected history is ready to begin.";d.textContent="As you use Lotus across devices, this space will connect health, missions, memory, and mode.";}else{h.textContent="Your shared system is beginning to tell one story.";d.textContent=notes.join(" ");}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",updateConnectedIntelligence,{once:true});else updateConnectedIntelligence();window.addEventListener(DRAGONFLY_DATA_EVENT,updateConnectedIntelligence);window.addEventListener("focus",updateConnectedIntelligence);

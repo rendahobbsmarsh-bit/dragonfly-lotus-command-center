@@ -1,4 +1,4 @@
-const CACHE_NAME = "dragonfly-lotus-v6-0-cloud-mirror";
+const CACHE_NAME = "dragonfly-lotus-v7-0-connected-intelligence";
 const APP_SHELL = [
   "./",
   "./index.html",

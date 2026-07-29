@@ -5,8 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#171424" name="theme-color"/>
-<title>DragonFly Lotus V6 — Cloud Mirror</title>
-<meta content="DragonFly Lotus V6 — Captain Ren’s local-first personal operating system with secure cross-device cloud mirroring." name="description"/>
+<title>DragonFly Lotus V7 — Connected Intelligence</title>
+<meta content="DragonFly Lotus V7 — secure email/password cloud mirroring and connected intelligence." name="description"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="DragonFly Lotus" name="apple-mobile-web-app-title"/>
@@ -22,7 +22,7 @@
 <h1>Command Center</h1>
 </div>
 <div aria-label="System status" class="system-status-strip" id="systemStatusStrip">
-<span class="version-chip">V5.0</span>
+<span class="version-chip">V7.0</span>
 <span class="system-status" id="saveStatus">Saved on this device</span>
 <span class="system-status" id="connectionStatus">Checking connection…</span>
 <span class="system-status cloud-header-status" id="cloudHeaderStatus">Cloud not connected</span></div><div class="clock-block">
@@ -571,10 +571,8 @@ Notes: SEA overnight"></textarea>
 <div class="section-heading">
 <div>
 <p class="eyebrow">DRAGONFLY CLOUD</p>
-<h2>Cloud Mirror</h2>
-<p class="intelligence-context">
-            Keep the same Command Center data on your Mac, iPhone, and iPad while preserving offline use.
-          </p>
+<h2>Connected Intelligence</h2>
+<p class="intelligence-context">One secure account, one shared memory, and the same DragonFly Lotus data across your Mac, iPhone, and iPad.</p>
 </div>
 <span class="status-pill" id="cloudMirrorStatus">NOT CONFIGURED</span>
 </div>
@@ -611,19 +609,7 @@ Notes: SEA overnight"></textarea>
 <button class="quiet-button" id="cloudClearConfigButton" type="button">Remove Configuration</button>
 </div>
 </details>
-<div class="cloud-auth-card">
-<div>
-<span class="intelligence-label">PRIVATE SIGN-IN</span>
-<h3>Send a secure sign-in link</h3>
-<p>Use the same email on every device. No password is stored inside DragonFly Lotus.</p>
-</div>
-<div class="cloud-auth-actions">
-<input autocomplete="email" id="cloudEmail" placeholder="you@example.com" type="email"/>
-<button id="cloudSignInButton" type="button">Email My Sign-In Link</button>
-<button class="quiet-button" hidden="" id="cloudSignOutButton" type="button">Sign Out</button>
-</div>
-<p class="cloud-message" id="cloudAuthMessage"></p>
-</div>
+<div class="cloud-auth-card v7-auth-card"><div><span class="intelligence-label">CAPTAIN REN ACCOUNT</span><h3>Create your private DragonFly login</h3><p>Use the same email and password on every device. DragonFly Lotus never stores the password itself.</p></div><div class="cloud-auth-actions"><label>Email<input autocomplete="email" id="cloudEmail" placeholder="you@example.com" type="email"/></label><label>Password<input autocomplete="current-password" id="cloudPassword" placeholder="At least 8 characters" type="password"/></label><div class="cloud-auth-button-row"><button id="cloudCreateAccountButton" type="button">Create Account</button><button class="quiet-button" id="cloudSignInButton" type="button">Sign In</button></div><button class="text-button" id="cloudForgotPasswordButton" type="button">Forgot password?</button><button class="quiet-button" hidden="" id="cloudSignOutButton" type="button">Sign Out</button></div><p class="cloud-message" id="cloudAuthMessage"></p></div>
 <div class="cloud-control-grid">
 <article>
 <span class="intelligence-label">SYNC NOW</span>
@@ -641,7 +627,7 @@ Notes: SEA overnight"></textarea>
 <strong>Keep using Lotus without a signal.</strong>
 <p>Changes wait locally and mirror after internet access returns.</p>
 </article>
-</div>
+<article id="connectedIntelligenceCard"><span class="intelligence-label">CONNECTED INTELLIGENCE</span><strong id="connectedIntelligenceHeadline">Cloud history is waiting for its first synchronized day.</strong><p id="connectedIntelligenceText">Once your devices share one memory, Morning Intelligence can notice patterns across home days, flight days, health, and Captain’s Log.</p></article></div>
 <div class="cloud-log-wrap">
 <div class="journal-history-header">
 <div>
