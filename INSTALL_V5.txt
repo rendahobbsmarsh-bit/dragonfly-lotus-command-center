@@ -1,0 +1,4 @@
+unzip -o DragonFly_Lotus_v5_0_Cohesive_OS.zip
+git add .
+git commit -m "DragonFly Lotus V5.0 - Cohesive personal OS"
+git push

@@ -1,0 +1,4 @@
+unzip -o DragonFly_Lotus_v6_0_Cloud_Mirror.zip
+git add .
+git commit -m "DragonFly Lotus V6.0 - Cloud Mirror"
+git push

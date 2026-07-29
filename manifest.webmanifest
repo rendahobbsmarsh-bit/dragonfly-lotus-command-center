@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus Command Center",
+  "name": "DragonFly Lotus V6 — Cloud Mirror",
   "short_name": "DragonFly Lotus",
-  "description": "Captain Ren's personal mission and flight operating system.",
+  "description": "Captain Ren’s local-first personal operating system with secure cross-device cloud mirroring.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

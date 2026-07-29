@@ -1,211 +1,275 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#171424" />
-  <title>DragonFly Lotus Command Center</title>
-
-  <meta name="description" content="DragonFly Lotus Command Center — Captain Ren's personal mission and flight operating system." />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="DragonFly Lotus" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#171424" name="theme-color"/>
+<title>DragonFly Lotus V6 — Cloud Mirror</title>
+<meta content="DragonFly Lotus V6 — Captain Ren’s local-first personal operating system with secure cross-device cloud mirroring." name="description"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="DragonFly Lotus" name="apple-mobile-web-app-title"/>
+<link href="./manifest.webmanifest" rel="manifest"/>
+<link href="./icons/icon-192.png" rel="apple-touch-icon"/>
+<link href="./icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <p class="eyebrow">DRAGONFLY LOTUS</p>
-      <h1>Command Center</h1>
-    </div>
-    <div class="clock-block">
-      <strong id="time">--:--</strong>
-      <span id="date">Loading date…</span>
-    </div>
-  </header>
-
-  <main class="dashboard">
-    <section class="hero panel">
-      <div>
-        <span id="modeBadge" class="badge">HOME</span>
-        <h2 id="modeTitle">Dragonfly Bliss</h2>
-        <div id="modeNotes" class="mode-notes"></div>
-      </div>
-      <div class="mode-switcher">
-        <button class="mode" data-mode="home">Home</button>
-        <button class="mode" data-mode="flight">Flight Attendant</button>
-        <button class="mode" data-mode="turbulence">Turbulence</button>
-      </div>
-    </section>
-    <section class="panel morning-intelligence" aria-labelledby="morningIntelligenceTitle">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">MORNING INTELLIGENCE</p>
-          <h2 id="morningIntelligenceTitle">Captain Ren's Daily Briefing</h2>
-          <p id="morningIntelligenceContext" class="intelligence-context">
+<header class="topbar">
+<div>
+<p class="eyebrow">DRAGONFLY LOTUS</p>
+<h1>Command Center</h1>
+</div>
+<div aria-label="System status" class="system-status-strip" id="systemStatusStrip">
+<span class="version-chip">V5.0</span>
+<span class="system-status" id="saveStatus">Saved on this device</span>
+<span class="system-status" id="connectionStatus">Checking connection…</span>
+<span class="system-status cloud-header-status" id="cloudHeaderStatus">Cloud not connected</span></div><div class="clock-block">
+<strong id="time">--:--</strong>
+<span id="date">Loading date…</span>
+</div>
+</header>
+<nav aria-label="DragonFly Lotus workspaces" class="workspace-nav" id="workspaceNav">
+<div class="workspace-nav-inner">
+<button aria-selected="true" class="workspace-tab is-active" data-workspace-target="today" type="button">
+<span class="workspace-icon">⌂</span><span>Today</span>
+</button>
+<button aria-selected="false" class="workspace-tab" data-workspace-target="flight" type="button">
+<span class="workspace-icon">✈</span><span>Flight Deck</span>
+</button>
+<button aria-selected="false" class="workspace-tab" data-workspace-target="health" type="button">
+<span class="workspace-icon">♥</span><span>Health</span>
+</button>
+<button aria-selected="false" class="workspace-tab" data-workspace-target="money" type="button">
+<span class="workspace-icon">$</span><span>Money</span>
+</button>
+<button aria-selected="false" class="workspace-tab" data-workspace-target="bliss" type="button">
+<span class="workspace-icon">◇</span><span>Bliss</span>
+</button>
+<button aria-selected="false" class="workspace-tab" data-workspace-target="log" type="button">
+<span class="workspace-icon">✎</span><span>Captain’s Log</span>
+</button>
+<button aria-selected="false" class="workspace-tab" data-workspace-target="cloud" type="button">
+<span class="workspace-icon">☁</span><span>Cloud</span>
+</button></div>
+<p class="workspace-description" id="workspaceDescription">
+        Your daily cockpit: briefing, priorities, upcoming items, and the next clear move.
+      </p>
+</nav>
+<main class="dashboard">
+<section class="hero panel workspace-panel" data-workspace="today">
+<div>
+<span class="badge" id="modeBadge">HOME</span>
+<h2 id="modeTitle">Dragonfly Bliss</h2>
+<div class="mode-notes" id="modeNotes"></div>
+</div>
+<div class="mode-switcher">
+<button class="mode" data-mode="home">Home</button>
+<button class="mode" data-mode="flight">Flight Attendant</button>
+<button class="mode" data-mode="turbulence">Turbulence</button>
+</div>
+</section><section class="panel v5-snapshot workspace-panel" data-workspace="today" id="v5SystemSnapshot">
+<div class="section-heading">
+<div>
+<p class="eyebrow">SYSTEM SNAPSHOT</p>
+<h2>Your Life, One Clear View</h2>
+<p class="intelligence-context">The essential instruments—without asking you to visit every workspace.</p>
+</div>
+<span class="status-pill" id="v5SnapshotStatus">LIVE</span>
+</div>
+<div class="v5-snapshot-grid">
+<article class="v5-snapshot-card">
+<span class="intelligence-label">NEXT MISSION</span>
+<strong id="v5NextMission">No mission scheduled</strong>
+<p id="v5NextMissionTime">Add a mission in Flight Deck.</p>
+<button class="text-button" data-workspace-target="flight" type="button">Open Flight Deck</button>
+</article>
+<article class="v5-snapshot-card">
+<span class="intelligence-label">HEALTH CORE</span>
+<strong id="v5HealthHeadline">Water 0 oz • Protein 0 g</strong>
+<p id="v5HealthSupport">Small inputs count. Keep the body supported.</p>
+<div class="v5-quick-actions">
+<button data-amount="12" data-v5-health-add="water" type="button">+12 oz</button>
+<button data-amount="25" data-v5-health-add="protein" type="button">+25 g</button>
+</div>
+</article>
+<article class="v5-snapshot-card">
+<span class="intelligence-label">CURRENT FOCUS</span>
+<strong id="v5CurrentFocus">Choose the next clear move.</strong>
+<p id="v5FocusNext">Your Current / Next / Later plan will appear here.</p>
+</article>
+<article class="v5-snapshot-card">
+<span class="intelligence-label">MEMORY</span>
+<strong id="v5MemoryHeadline">Your story begins with today.</strong>
+<p id="v5MemoryText">A recent win or meaningful moment will return here.</p>
+<button class="text-button" data-workspace-target="log" type="button">Open Captain’s Log</button>
+</article>
+</div>
+</section>
+<section aria-labelledby="morningIntelligenceTitle" class="panel morning-intelligence workspace-panel" data-workspace="today">
+<div class="section-heading">
+<div>
+<p class="eyebrow">MORNING INTELLIGENCE</p>
+<h2 id="morningIntelligenceTitle">Captain Ren's Daily Briefing</h2>
+<p class="intelligence-context" id="morningIntelligenceContext">
             Preparing your live briefing…
           </p>
-        </div>
-        <span id="morningIntelligenceStatus" class="status-pill">LIVE BRIEFING</span>
-      </div>
-
-      <article class="intelligence-narrative" aria-live="polite">
-        <span class="intelligence-label">COMMAND BRIEF</span>
-        <p id="intelligenceSageNote" class="sage-note">
+</div>
+<span class="status-pill" id="morningIntelligenceStatus">LIVE BRIEFING</span>
+</div>
+<article aria-live="polite" class="intelligence-narrative">
+<span class="intelligence-label">COMMAND BRIEF</span>
+<p class="sage-note" id="intelligenceSageNote">
           I’m here with you. One clear next move is enough.
         </p>
-        <p id="intelligenceNarrative">
+<p id="intelligenceNarrative">
           Reading mission, health, appointments, countdowns, flight operations,
           focus items and Dragonfly Bliss.
         </p>
-      </article>
-
-      <div class="intelligence-grid">
-        <article class="intelligence-card intelligence-mission">
-          <span class="intelligence-label">TODAY'S MISSION</span>
-          <strong id="intelligenceMission">Set one intentional mission.</strong>
-          <p id="intelligenceModeNote">Home Mode is active.</p>
-        </article>
-
-        <article class="intelligence-card">
-          <span class="intelligence-label">TOP THREE</span>
-          <ol id="intelligenceTopThree" class="intelligence-list">
-            <li>Choose today's first priority.</li>
-          </ol>
-        </article>
-
-        <article class="intelligence-card">
-          <span class="intelligence-label">UPCOMING</span>
-          <div id="intelligenceUpcoming" class="intelligence-list">
-            <p>No urgent preparation is showing.</p>
-          </div>
-        </article>
-
-        <article class="intelligence-card intelligence-observation">
-          <span class="intelligence-label">TODAY'S OBSERVATION</span>
-          <strong id="intelligenceObservation">
+</article>
+<div class="intelligence-grid">
+<article class="intelligence-card intelligence-mission">
+<span class="intelligence-label">TODAY'S MISSION</span>
+<strong id="intelligenceMission">Set one intentional mission.</strong>
+<p id="intelligenceModeNote">Home Mode is active.</p>
+</article>
+<article class="intelligence-card">
+<span class="intelligence-label">TOP THREE</span>
+<ol class="intelligence-list" id="intelligenceTopThree">
+<li>Choose today's first priority.</li>
+</ol>
+</article>
+<article class="intelligence-card">
+<span class="intelligence-label">UPCOMING</span>
+<div class="intelligence-list" id="intelligenceUpcoming">
+<p>No urgent preparation is showing.</p>
+</div>
+</article>
+<article class="intelligence-card intelligence-observation">
+<span class="intelligence-label">TODAY'S OBSERVATION</span>
+<strong id="intelligenceObservation">
             One clear next move is enough.
           </strong>
-          <p id="intelligenceNextMove">
+<p id="intelligenceNextMove">
             Name your mission and begin there.
           </p>
-        </article>
-      </div>
-
-      <article class="sage-observations">
-        <div class="section-heading compact-heading">
-          <div>
-            <span class="intelligence-label">SAGE'S OBSERVATIONS</span>
-            <p class="intelligence-context">What I’m quietly noticing about your day.</p>
-          </div>
-          <span id="sageObservationsStatus" class="status-pill">LIVE</span>
-        </div>
-        <div id="sageObservationsList" class="sage-observations-list">
-          <article class="sage-observation-item">
-            <strong>One clear next move is enough.</strong>
-            <p>Your observations will appear here as the Command Center reads the day.</p>
-          </article>
-        </div>
-      </article>
-
-      <article class="flight-deck-briefing">
-        <div class="section-heading compact-heading">
-          <div>
-            <span class="intelligence-label">SAGE'S FLIGHT DECK</span>
-            <p class="intelligence-context">A mode-aware briefing for the next leg, not the whole trip.</p>
-          </div>
-          <span id="flightDeckStatus" class="status-pill">READY</span>
-        </div>
-        <div class="flight-deck-grid">
-          <article class="flight-deck-card">
-            <span class="intelligence-label">ROUTE</span>
-            <strong id="flightDeckRoute">No route entered</strong>
-            <p id="flightDeckOvernight">Add a route to identify the overnight.</p>
-          </article>
-          <article class="flight-deck-card">
-            <span class="intelligence-label">NEXT LEG</span>
-            <strong id="flightDeckNextLeg">No leg selected</strong>
-            <p id="flightDeckLegGuidance">Flighty will handle live operational changes.</p>
-          </article>
-          <article class="flight-deck-card flight-deck-message">
-            <span class="intelligence-label">BRIEFING</span>
-            <strong id="flightDeckMessage">Your only job is to become ready for the next leg.</strong>
-            <p id="flightDeckSupport">I’ll keep watch over the human side of the day.</p>
-          </article>
-        </div>
-      </article>
-
-      <article class="intelligence-patterns">
-        <div>
-          <span class="intelligence-label">PATTERNS SAGE IS NOTICING</span>
-          <p id="intelligencePatterns">
+</article>
+</div>
+<article class="sage-observations">
+<div class="section-heading compact-heading">
+<div>
+<span class="intelligence-label">SAGE'S OBSERVATIONS</span>
+<p class="intelligence-context">What I’m quietly noticing about your day.</p>
+</div>
+<span class="status-pill" id="sageObservationsStatus">LIVE</span>
+</div>
+<div class="sage-observations-list" id="sageObservationsList">
+<article class="sage-observation-item">
+<strong>One clear next move is enough.</strong>
+<p>Your observations will appear here as the Command Center reads the day.</p>
+</article>
+</div>
+</article>
+<article class="flight-deck-briefing">
+<div class="section-heading compact-heading">
+<div>
+<span class="intelligence-label">SAGE'S FLIGHT DECK</span>
+<p class="intelligence-context">A mode-aware briefing for the next leg, not the whole trip.</p>
+</div>
+<span class="status-pill" id="flightDeckStatus">READY</span>
+</div>
+<div class="flight-deck-grid">
+<article class="flight-deck-card">
+<span class="intelligence-label">ROUTE</span>
+<strong id="flightDeckRoute">No route entered</strong>
+<p id="flightDeckOvernight">Add a route to identify the overnight.</p>
+</article>
+<article class="flight-deck-card">
+<span class="intelligence-label">NEXT LEG</span>
+<strong id="flightDeckNextLeg">No leg selected</strong>
+<p id="flightDeckLegGuidance">Flighty will handle live operational changes.</p>
+</article>
+<article class="flight-deck-card flight-deck-message">
+<span class="intelligence-label">BRIEFING</span>
+<strong id="flightDeckMessage">Your only job is to become ready for the next leg.</strong>
+<p id="flightDeckSupport">I’ll keep watch over the human side of the day.</p>
+</article>
+</div>
+</article>
+<article class="intelligence-patterns">
+<div>
+<span class="intelligence-label">PATTERNS SAGE IS NOTICING</span>
+<p id="intelligencePatterns">
             Your patterns will become clearer as you use the Command Center.
           </p>
-        </div>
-        <span id="intelligenceLearningStatus" class="status-pill">LEARNING</span>
-      </article>
-    </section>
-
-
-    <section id="nextMissionPanel" class="panel mission-command">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">NEXT MISSION</p>
-          <h2 id="nextMissionTitle">No mission scheduled</h2>
-          <p id="nextMissionContext" class="intelligence-context">Add the next flight, appointment, home mission, or trip below.</p>
-        </div>
-        <span id="nextMissionStatus" class="status-pill">READY</span>
-      </div>
-      <div class="next-mission-grid">
-        <article class="next-mission-card">
-          <span class="intelligence-label">WHEN</span>
-          <strong id="nextMissionWhen">Not scheduled</strong>
-          <p id="nextMissionTiming">Wake, leave, report, and van times will appear here.</p>
-        </article>
-        <article class="next-mission-card">
-          <span class="intelligence-label">ROUTE / PURPOSE</span>
-          <strong id="nextMissionRoute">No route or purpose entered</strong>
-          <p id="nextMissionOvernight">The final city entered will be treated as the overnight.</p>
-        </article>
-        <article class="next-mission-card next-mission-message">
-          <span class="intelligence-label">SAGE'S PREPARATION NOTE</span>
-          <strong id="nextMissionMessage">Tonight's work is to make the next mission easier.</strong>
-          <p id="nextMissionCountdown">No countdown available.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="panel mission-calendar">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">MISSION CALENDAR</p>
-          <h2>Load the Month, Fly the Next Mission</h2>
-          <p class="intelligence-context">Add one mission or paste the month when your airline schedule is released.</p>
-        </div>
-        <span id="missionCalendarStatus" class="status-pill">0 UPCOMING</span>
-      </div>
-
-      <form id="missionForm" class="form-grid mission-form">
-        <label>Mission Type<select id="missionType"><option>Flight</option><option>Trustee Meeting</option><option>Appointment</option><option>Home</option><option>Vacation</option><option>Personal</option></select></label>
-        <label>Mission Date<input id="missionDate" type="date" required></label>
-        <label>End Date<input id="missionEndDate" type="date"></label>
-        <label>Pairing / Flight Number<input id="missionNumber" placeholder="330 or Pairing 1234"></label>
-        <label>Wake Time<input id="missionWakeTime" type="time"></label>
-        <label>Leave Home<input id="missionLeaveTime" type="time"></label>
-        <label>Report Time<input id="missionReportTime" type="time"></label>
-        <label>Hotel Van<input id="missionVanTime" type="time"></label>
-        <label class="wide">Route / Purpose<input id="missionRoute" placeholder="DAL - AUS - TPA - SEA or Trustee Meeting"></label>
-        <label class="wide">Notes<textarea id="missionNotes" placeholder="Hotel, food bag, meeting notes, recovery needs…"></textarea></label>
-        <button type="submit">Add Mission</button>
-      </form>
-
-      <details class="schedule-import">
-        <summary>Paste a monthly schedule</summary>
-        <p class="intelligence-context">Use one mission per block. Separate missions with a blank line.</p>
-        <textarea id="missionImportText" placeholder="2026-08-10 to 2026-08-11
+</div>
+<span class="status-pill" id="intelligenceLearningStatus">LEARNING</span>
+</article>
+</section>
+<section class="panel workspace-intro workspace-panel" data-workspace="flight" data-workspace-intro="flight">
+<p class="eyebrow">FLIGHT WORKSPACE</p>
+<div class="workspace-intro-row">
+<div>
+<h2>Mission Center</h2>
+<p class="intelligence-context">Enter the pairing once. Lotus will use it everywhere.</p>
+</div>
+<button class="workspace-home-button" data-workspace-target="today" type="button">Return to Today</button>
+</div>
+</section><section class="panel mission-command workspace-panel" data-workspace="today flight" id="nextMissionPanel">
+<div class="section-heading">
+<div>
+<p class="eyebrow">NEXT MISSION</p>
+<h2 id="nextMissionTitle">No mission scheduled</h2>
+<p class="intelligence-context" id="nextMissionContext">Add the next flight, appointment, home mission, or trip below.</p>
+</div>
+<span class="status-pill" id="nextMissionStatus">READY</span>
+</div>
+<div class="next-mission-grid">
+<article class="next-mission-card">
+<span class="intelligence-label">WHEN</span>
+<strong id="nextMissionWhen">Not scheduled</strong>
+<p id="nextMissionTiming">Wake, leave, report, and van times will appear here.</p>
+</article>
+<article class="next-mission-card">
+<span class="intelligence-label">ROUTE / PURPOSE</span>
+<strong id="nextMissionRoute">No route or purpose entered</strong>
+<p id="nextMissionOvernight">The final city entered will be treated as the overnight.</p>
+</article>
+<article class="next-mission-card next-mission-message">
+<span class="intelligence-label">SAGE'S PREPARATION NOTE</span>
+<strong id="nextMissionMessage">Tonight's work is to make the next mission easier.</strong>
+<p id="nextMissionCountdown">No countdown available.</p>
+</article>
+</div>
+</section>
+<section class="panel mission-calendar workspace-panel" data-workspace="flight">
+<div class="section-heading">
+<div>
+<p class="eyebrow">UNIFIED FLIGHT &amp; MISSION CORE</p>
+<h2>Unified Pairing &amp; Mission Center</h2>
+<p class="intelligence-context">Enter each pairing once. Next Mission, Flight Deck, Morning Intelligence, and Upcoming all read from this record.</p>
+</div>
+<span class="status-pill" id="missionCalendarStatus">0 UPCOMING</span>
+</div>
+<form class="form-grid mission-form" id="missionForm">
+<label>Mission Type<select id="missionType"><option>Flight</option><option>Trustee Meeting</option><option>Appointment</option><option>Home</option><option>Vacation</option><option>Personal</option></select></label>
+<label>Mission Date<input id="missionDate" required="" type="date"/></label>
+<label>End Date<input id="missionEndDate" type="date"/></label>
+<label>Pairing / Flight Number<input id="missionNumber" placeholder="330 or Pairing 1234"/></label>
+<label>Wake Time<input id="missionWakeTime" type="time"/></label>
+<label>Leave Home<input id="missionLeaveTime" type="time"/></label>
+<label>Report Time<input id="missionReportTime" type="time"/></label>
+<label>Hotel Van<input id="missionVanTime" type="time"/></label>
+<label class="wide">Route / Purpose<input id="missionRoute" placeholder="DAL - AUS - TPA - SEA or Trustee Meeting"/></label>
+<label class="wide">Notes<textarea id="missionNotes" placeholder="Hotel, food bag, meeting notes, recovery needs…"></textarea></label>
+<button type="submit">Save Mission</button>
+<p class="wide form-helper">For a pairing such as DAL - AUS - TPA - SEA, DAL → AUS becomes the next leg and SEA becomes the overnight.</p>
+</form>
+<details class="schedule-import">
+<summary>Paste a monthly schedule</summary>
+<p class="intelligence-context">Use one mission per block. Separate missions with a blank line.</p>
+<textarea id="missionImportText" placeholder="2026-08-10 to 2026-08-11
 Type: Flight
 Pairing: 330
 Wake: 03:00
@@ -214,186 +278,384 @@ Report: 05:00
 Route: DAL - AUS - TPA - SEA
 Van: 04:45
 Notes: SEA overnight"></textarea>
-        <div class="button-row">
-          <button id="missionImportButton" type="button">Import Schedule</button>
-          <button id="missionImportExample" type="button">Load Example</button>
-        </div>
-      </details>
-
-      <div id="missionList" class="mission-list"></div>
-      <p id="missionEmpty">No missions scheduled yet.</p>
-    </section>
-
-    <section class="panel captain">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">CAPTAIN'S BRIEFING</p>
-          <h2 id="captainGreeting">Good Day, Captain Ren</h2>
-          <p id="captainDate"></p>
-        </div>
-        <span id="captainMode" class="status-pill">HOME MODE</span>
-      </div>
-      <div class="briefing-grid">
-        <div><span>Mission</span><strong id="captainMission">Set today's mission below.</strong></div>
-        <div><span>Flight</span><strong id="captainFlight">No flight entered</strong></div>
-        <div><span>Timing</span><strong id="captainTimes">Times not set</strong></div>
-        <div><span>Next Countdown</span><strong id="captainCountdown">No active countdown</strong><small id="captainCountdownDays">Add a date below</small></div>
-        <div><span>Water</span><strong id="captainWater">0 / 128 oz</strong></div>
-        <div><span>Protein</span><strong id="captainProtein">0 / 170 g</strong></div>
-        <div><span>Exercise</span><strong id="captainExercise">Not complete</strong></div>
-        <div><span>Dragonfly Bliss</span><strong id="captainBliss">0 of 6 complete</strong></div>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">TODAY'S FLIGHT PATH</p>
-          <h2>Day at a Glance</h2>
-        </div>
-      </div>
-      <div class="form-grid">
-        <label>Mission<input id="mission" type="text" placeholder="One intentional mission" /></label>
-        <label>Report Time<input id="reportTime" type="time" /></label>
-        <label>Leave Home<input id="leaveTime" type="time" /></label>
-        <label>Pairing<select id="pairing"><option>1 day</option><option>2 days</option><option>3 days</option><option>4 days</option></select></label>
-      </div>
-      <div class="countdown-strip">Departure countdown: <strong id="countdown">Set leave-home time</strong></div>
-      <div class="focus-grid">
-        <label>Current<textarea id="current" placeholder="What is in front of you now?"></textarea></label>
-        <label>Next<textarea id="next" placeholder="What comes next?"></textarea></label>
-        <label>Later<textarea id="later" placeholder="What can wait?"></textarea></label>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="eyebrow">HEALTH DASHBOARD</p><h2>Daily Instruments</h2></div>
-        <span id="healthStatus" class="status-pill">DAILY PROGRESS</span>
-      </div>
-      <div class="health-grid">
-        <div class="metric-card">
-          <span>Water</span><strong><span id="waterDisplay">0</span> / 128 oz</strong>
-          <div class="progress"><div id="waterProgress"></div></div>
-          <input id="waterValue" type="number" min="0" step="1" placeholder="Ounces" />
-        </div>
-        <div class="metric-card">
-          <span>Protein</span><strong><span id="proteinDisplay">0</span> / 170 g</strong>
-          <div class="progress"><div id="proteinProgress"></div></div>
-          <input id="proteinValue" type="number" min="0" step="1" placeholder="Grams" />
-        </div>
-        <label>Weight<input id="weightValue" type="number" step="0.1" placeholder="Weight" /></label>
-        <label>Sleep<input id="sleepValue" type="number" step="0.25" placeholder="Hours" /></label>
-        <label class="checkline"><input id="exerciseComplete" type="checkbox" /> Exercise complete</label>
-        <label class="wide">Health notes<textarea id="healthNotes" placeholder="Energy, medication, symptoms, wins…"></textarea></label>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="eyebrow">QUICK TRACKERS</p><h2>Original Instruments</h2></div>
-      </div>
-      <div class="tracker-row">
-        <div class="tracker">
-          <span>Water</span><strong id="water">0</strong>
-          <progress id="waterBar" max="128" value="0"></progress>
-          <div class="button-row"><button data-water="12">+12 oz</button><button data-water="16">+16 oz</button><button data-water="-12">−12</button></div>
-        </div>
-        <div class="tracker">
-          <span>Protein</span><strong id="protein">0</strong>
-          <progress id="proteinBar" max="170" value="0"></progress>
-          <div class="button-row"><button data-protein="20">+20 g</button><button data-protein="30">+30 g</button><button data-protein="-20">−20</button></div>
-        </div>
-        <label class="checkline"><input id="exercise" type="checkbox" /> Exercise complete</label>
-        <label>Workout<input id="workout" type="text" placeholder="Today's movement" /></label>
-        <label>Weight<input id="weight" type="number" step="0.1" /></label>
-        <label>Photo<input id="photo" type="text" placeholder="One Mood Per Day note" /></label>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="eyebrow">CAPTAIN'S RECOMMENDATIONS</p><h2>Steady Guidance</h2></div>
-        <span id="recommendationsStatus" class="status-pill">STEADY GUIDANCE</span>
-      </div>
-      <div id="recommendationsList" class="recommendations-list"></div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">FLIGHT OPERATIONS</p><h2>Trip Details</h2></div></div>
-      <div class="form-grid">
-        <label>Flight Number<input id="opsFlightNumber" /></label>
-        <label>Route<input id="opsRoute" placeholder="DAL → LGA" /></label>
-        <label>Aircraft<input id="opsAircraft" /></label>
-        <label>Position<input id="opsPosition" /></label>
-        <label>Layover<input id="opsLayover" /></label>
-        <label>Van Time<input id="opsVanTime" type="time" /></label>
-        <label>Hotel<input id="opsHotel" /></label>
-        <label class="wide">Crew Notes<textarea id="opsCrewNotes"></textarea></label>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">TASKS</p><h2>Today’s Checklist</h2></div></div>
-      <form id="taskForm" class="inline-form">
-        <input id="taskInput" type="text" placeholder="Add a task" />
-        <button type="submit">Add</button>
-      </form>
-      <ul id="tasks" class="clean-list"></ul>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">COUNTDOWN CENTER</p><h2>Upcoming Milestones</h2></div><span id="countdownStatus" class="status-pill">0 ACTIVE</span></div>
-      <form id="countdownForm" class="form-grid">
-        <label>Name<input id="countdownName" required /></label>
-        <label>Date<input id="countdownDate" type="date" required /></label>
-        <label>Category<select id="countdownCategory"><option>Personal</option><option>Travel</option><option>Work</option><option>Money</option><option>Health</option></select></label>
-        <button type="submit">Add Countdown</button>
-      </form>
-      <p id="countdownEmpty">No countdowns yet.</p>
-      <div id="countdownList" class="countdown-list"></div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">DRAGONFLY BLISS</p><h2>Home Mode Progress</h2></div><span id="blissStatus" class="status-pill">0 OF 6 COMPLETE</span></div>
-      <div class="bliss-grid">
-        <article class="bliss-item"><label><input id="blissHomeDone" type="checkbox" /> Home</label><input id="blissHome" placeholder="Home focus" /></article>
-        <article class="bliss-item"><label><input id="blissGardenDone" type="checkbox" /> Garden</label><input id="blissGarden" placeholder="Garden focus" /></article>
-        <article class="bliss-item"><label><input id="blissPhotographyDone" type="checkbox" /> Photography</label><input id="blissPhotography" placeholder="Photo focus" /></article>
-        <article class="bliss-item"><label><input id="blissMealPrepDone" type="checkbox" /> Meal Prep</label><input id="blissMealPrep" placeholder="Meal prep focus" /></article>
-        <article class="bliss-item"><label><input id="blissLaundryDone" type="checkbox" /> Laundry</label><input id="blissLaundry" placeholder="Laundry focus" /></article>
-        <article class="bliss-item"><label><input id="blissWorkoutDone" type="checkbox" /> Workout</label><input id="blissWorkout" placeholder="Workout focus" /></article>
-      </div>
-      <label>Bliss Notes<textarea id="blissNotes"></textarea></label>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">MONEY & BILLS</p><h2>Due Dates</h2></div></div>
-      <form id="billForm" class="form-grid">
-        <label>Bill<input id="billName" required /></label>
-        <label>Amount<input id="billAmount" type="number" step="0.01" /></label>
-        <label>Due Date<input id="billDate" type="date" required /></label>
-        <button type="submit">Add Bill</button>
-      </form>
-      <ul id="bills" class="clean-list"></ul>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">APPOINTMENT PREP</p><h2>Medical & Personal Notes</h2></div></div>
-      <div class="form-grid">
-        <label>Purpose<input id="appointmentPurpose" /></label>
-        <label>Follow-up Date<input id="followUpDate" type="date" /></label>
-        <label class="wide">Questions<textarea id="appointmentQuestions"></textarea></label>
-        <label class="wide">Notes<textarea id="appointmentNotes"></textarea></label>
-        <label class="wide">Next Step<textarea id="appointmentNextStep"></textarea></label>
-      </div>
-    </section>
-  </main>
-
-  <footer>One day. One mission. One intentional life.</footer>
-  <script src="app.js"></script>
-
-  <script>
+<div class="button-row">
+<button id="missionImportButton" type="button">Import Schedule</button>
+<button id="missionImportExample" type="button">Load Example</button>
+</div>
+</details>
+<div class="mission-list" id="missionList"></div>
+<p id="missionEmpty">No missions scheduled yet.</p>
+</section>
+<section class="panel captain workspace-panel" data-workspace="today">
+<div class="section-heading">
+<div>
+<p class="eyebrow">CAPTAIN'S BRIEFING</p>
+<h2 id="captainGreeting">Good Day, Captain Ren</h2>
+<p id="captainDate"></p>
+</div>
+<span class="status-pill" id="captainMode">HOME MODE</span>
+</div>
+<div class="briefing-grid">
+<div><span>Mission</span><strong id="captainMission">Set today's mission below.</strong></div>
+<div><span>Flight</span><strong id="captainFlight">No flight entered</strong></div>
+<div><span>Timing</span><strong id="captainTimes">Times not set</strong></div>
+<div><span>Next Countdown</span><strong id="captainCountdown">No active countdown</strong><small id="captainCountdownDays">Add a date below</small></div>
+<div><span>Water</span><strong id="captainWater">0 / 128 oz</strong></div>
+<div><span>Protein</span><strong id="captainProtein">0 / 170 g</strong></div>
+<div><span>Exercise</span><strong id="captainExercise">Not complete</strong></div>
+<div><span>Dragonfly Bliss</span><strong id="captainBliss">0 of 6 complete</strong></div>
+</div>
+</section>
+<section class="panel workspace-panel" data-workspace="today">
+<div class="section-heading">
+<div>
+<p class="eyebrow">TODAY'S FLIGHT PATH</p>
+<h2>Day at a Glance</h2>
+</div>
+</div>
+<div class="form-grid">
+<label>Mission<input id="mission" placeholder="One intentional mission" type="text"/></label>
+<label>Report Time<input id="reportTime" type="time"/></label>
+<label>Leave Home<input id="leaveTime" type="time"/></label>
+<label>Pairing<select id="pairing"><option>1 day</option><option>2 days</option><option>3 days</option><option>4 days</option></select></label>
+</div>
+<div class="countdown-strip">Departure countdown: <strong id="countdown">Set leave-home time</strong></div>
+<div class="focus-grid">
+<label>Current<textarea id="current" placeholder="What is in front of you now?"></textarea></label>
+<label>Next<textarea id="next" placeholder="What comes next?"></textarea></label>
+<label>Later<textarea id="later" placeholder="What can wait?"></textarea></label>
+</div>
+</section>
+<section class="panel workspace-intro workspace-panel" data-workspace="health" data-workspace-intro="health">
+<p class="eyebrow">HEALTH WORKSPACE</p>
+<div class="workspace-intro-row">
+<div>
+<h2>Body &amp; Care</h2>
+<p class="intelligence-context">One health record feeding every briefing and observation.</p>
+</div>
+<button class="workspace-home-button" data-workspace-target="today" type="button">Return to Today</button>
+</div>
+</section><section class="panel unified-health-panel workspace-panel" data-workspace="health">
+<div class="section-heading">
+<div>
+<p class="eyebrow">UNIFIED HEALTH CORE</p>
+<h2>Daily Instruments</h2>
+<p class="intelligence-context">Enter once. Every briefing and observation updates from the same record.</p>
+</div>
+<span class="status-pill" id="healthStatus">DAILY PROGRESS</span>
+</div>
+<div class="health-grid">
+<div class="metric-card unified-metric">
+<span>Water</span><strong><span id="waterDisplay">0</span> / 128 oz</strong>
+<div class="progress"><div id="waterProgress"></div></div>
+<input id="waterValue" inputmode="numeric" min="0" placeholder="Ounces" step="1" type="number"/>
+<div class="button-row health-quick-row">
+<button data-water="12" type="button">+12 oz</button>
+<button data-water="16" type="button">+16 oz</button>
+<button data-water="24" type="button">+24 oz</button>
+<button data-water="-12" type="button">−12</button>
+</div>
+</div>
+<div class="metric-card unified-metric">
+<span>Protein</span><strong><span id="proteinDisplay">0</span> / 170 g</strong>
+<div class="progress"><div id="proteinProgress"></div></div>
+<input id="proteinValue" inputmode="numeric" min="0" placeholder="Grams" step="1" type="number"/>
+<div class="button-row health-quick-row">
+<button data-protein="20" type="button">+20 g</button>
+<button data-protein="30" type="button">+30 g</button>
+<button data-protein="40" type="button">+40 g</button>
+<button data-protein="-20" type="button">−20</button>
+</div>
+</div>
+<label>Weight<input id="weightValue" placeholder="Weight" step="0.1" type="number"/></label>
+<label>Sleep<input id="sleepValue" placeholder="Hours" step="0.25" type="number"/></label>
+<label class="checkline"><input id="exerciseComplete" type="checkbox"/> Exercise complete</label>
+<label>Workout<input id="workout" placeholder="Today's movement" type="text"/></label>
+<label>One Mood Per Day<input id="photo" placeholder="Photo note" type="text"/></label>
+<label class="wide">Health notes<textarea id="healthNotes" placeholder="Energy, medication, symptoms, wins…"></textarea></label>
+</div>
+<div class="health-save-line"><span id="healthSaveStatus">Ready to log</span><button class="quiet-button" id="healthResetButton" type="button">Reset today’s health</button></div>
+<!-- Compatibility displays retained for older intelligence functions; hidden visually. -->
+<div aria-hidden="true" class="compatibility-health">
+<span id="water">0</span><progress id="waterBar" max="128" value="0"></progress>
+<span id="protein">0</span><progress id="proteinBar" max="170" value="0"></progress>
+<input id="exercise" type="checkbox"/><input id="weight" type="number"/>
+</div>
+</section>
+<section class="panel workspace-intro workspace-panel" data-workspace="log" data-workspace-intro="log">
+<p class="eyebrow">CAPTAIN’S LOG</p>
+<div class="workspace-intro-row">
+<div>
+<h2>Memory Workspace</h2>
+<p class="intelligence-context">A dated record of what mattered, what helped, and what you learned.</p>
+</div>
+<button class="workspace-home-button" data-workspace-target="today" type="button">Return to Today</button>
+</div>
+</section><section aria-labelledby="quickJournalTitle" class="panel quick-journal-panel workspace-panel" data-workspace="log">
+<div class="section-heading">
+<div>
+<p class="eyebrow">QUICK JOURNAL</p>
+<h2 id="quickJournalTitle">Captain’s Log</h2>
+<p class="intelligence-context">A sixty-second memory: one win, one release, one moment worth keeping.</p>
+</div>
+<span class="status-pill" id="journalStatus">READY TO WRITE</span>
+</div>
+<div class="journal-layout">
+<form class="journal-form" id="journalForm">
+<div aria-label="Choose today's mood" class="journal-mood-row" role="group">
+<button class="journal-mood" data-mood="Grounded" type="button">Grounded</button>
+<button class="journal-mood" data-mood="Hopeful" type="button">Hopeful</button>
+<button class="journal-mood" data-mood="Tired" type="button">Tired</button>
+<button class="journal-mood" data-mood="Proud" type="button">Proud</button>
+<button class="journal-mood" data-mood="Tender" type="button">Tender</button>
+<button class="journal-mood" data-mood="Turbulent" type="button">Turbulent</button>
+</div>
+<input id="journalMood" type="hidden"/>
+<label>One win
+            <input id="journalWin" maxlength="180" placeholder="What went right today?"/>
+</label>
+<label>One thing to release
+            <input id="journalRelease" maxlength="180" placeholder="What does not need to travel into tomorrow?"/>
+</label>
+<label>One moment worth keeping
+            <input id="journalGratitude" maxlength="180" placeholder="A person, view, meal, laugh, or quiet moment…"/>
+</label>
+<label>Quick note
+            <textarea id="journalNote" maxlength="1200" placeholder="What would you want future Ren to remember about today?"></textarea>
+</label>
+<div class="button-row journal-actions">
+<button type="submit">Save Captain’s Log</button>
+<button class="quiet-button" id="journalClearButton" type="button">Clear</button>
+<button class="quiet-button" id="journalExportButton" type="button">Export Journal</button>
+</div>
+</form>
+<aside class="journal-review">
+<span class="intelligence-label">TODAY’S AUTOMATIC REVIEW</span>
+<strong id="journalReviewHeadline">The day is still being written.</strong>
+<p id="journalReviewSummary">
+            Your mission, water, protein, movement, and next flight will appear here automatically.
+          </p>
+<div class="journal-review-grid">
+<div><span>Mission</span><strong id="journalReviewMission">Not set</strong></div>
+<div><span>Water</span><strong id="journalReviewWater">0 / 128 oz</strong></div>
+<div><span>Protein</span><strong id="journalReviewProtein">0 / 170 g</strong></div>
+<div><span>Movement</span><strong id="journalReviewMovement">Open</strong></div>
+</div>
+<article class="journal-sage-reflection">
+<span class="intelligence-label">SAGE’S REFLECTION</span>
+<p id="journalSageReflection">
+              You do not need a perfect day to have a meaningful one.
+            </p>
+</article>
+<article class="journal-memory-recall">
+<span class="intelligence-label">FROM YOUR MEMORY</span>
+<strong id="journalMemoryHeadline">Your history begins with the first entry.</strong>
+<p id="journalMemoryRecall">As entries accumulate, Lotus will bring meaningful moments forward.</p>
+</article></aside>
+</div>
+<div class="journal-history-header">
+<div>
+<span class="intelligence-label">RECENT LOGS</span>
+<p class="intelligence-context">Your seven most recent entries.</p>
+</div>
+<span class="status-pill" id="journalCount">0 ENTRIES</span>
+</div>
+<div class="journal-history" id="journalHistory"></div>
+<p id="journalEmpty">No journal entries yet. Your first entry can be one sentence.</p>
+</section>
+<section class="panel workspace-panel" data-workspace="today">
+<div class="section-heading">
+<div><p class="eyebrow">CAPTAIN'S RECOMMENDATIONS</p><h2>Steady Guidance</h2></div>
+<span class="status-pill" id="recommendationsStatus">STEADY GUIDANCE</span>
+</div>
+<div class="recommendations-list" id="recommendationsList"></div>
+</section>
+<section class="panel workspace-panel" data-workspace="today">
+<div class="section-heading"><div><p class="eyebrow">TASKS</p><h2>Today’s Checklist</h2></div></div>
+<form class="inline-form" id="taskForm">
+<input id="taskInput" placeholder="Add a task" type="text"/>
+<button type="submit">Add</button>
+</form>
+<ul class="clean-list" id="tasks"></ul>
+</section>
+<section class="panel workspace-panel" data-workspace="today">
+<div class="section-heading"><div><p class="eyebrow">COUNTDOWN CENTER</p><h2>Upcoming Milestones</h2></div><span class="status-pill" id="countdownStatus">0 ACTIVE</span></div>
+<form class="form-grid" id="countdownForm">
+<label>Name<input id="countdownName" required=""/></label>
+<label>Date<input id="countdownDate" required="" type="date"/></label>
+<label>Category<select id="countdownCategory"><option>Personal</option><option>Travel</option><option>Work</option><option>Money</option><option>Health</option></select></label>
+<button type="submit">Add Countdown</button>
+</form>
+<p id="countdownEmpty">No countdowns yet.</p>
+<div class="countdown-list" id="countdownList"></div>
+</section>
+<section class="panel workspace-intro workspace-panel" data-workspace="bliss" data-workspace-intro="bliss">
+<p class="eyebrow">DRAGONFLY BLISS</p>
+<div class="workspace-intro-row">
+<div>
+<h2>Home, Growth &amp; Beauty</h2>
+<p class="intelligence-context">The part of your life that continues beyond the flight line.</p>
+</div>
+<button class="workspace-home-button" data-workspace-target="today" type="button">Return to Today</button>
+</div>
+</section><section class="panel workspace-panel" data-workspace="bliss">
+<div class="section-heading"><div><p class="eyebrow">DRAGONFLY BLISS</p><h2>Home Mode Progress</h2></div><span class="status-pill" id="blissStatus">0 OF 6 COMPLETE</span></div>
+<div class="bliss-grid">
+<article class="bliss-item"><label><input id="blissHomeDone" type="checkbox"/> Home</label><input id="blissHome" placeholder="Home focus"/></article>
+<article class="bliss-item"><label><input id="blissGardenDone" type="checkbox"/> Garden</label><input id="blissGarden" placeholder="Garden focus"/></article>
+<article class="bliss-item"><label><input id="blissPhotographyDone" type="checkbox"/> Photography</label><input id="blissPhotography" placeholder="Photo focus"/></article>
+<article class="bliss-item"><label><input id="blissMealPrepDone" type="checkbox"/> Meal Prep</label><input id="blissMealPrep" placeholder="Meal prep focus"/></article>
+<article class="bliss-item"><label><input id="blissLaundryDone" type="checkbox"/> Laundry</label><input id="blissLaundry" placeholder="Laundry focus"/></article>
+<article class="bliss-item"><label><input id="blissWorkoutDone" type="checkbox"/> Workout</label><input id="blissWorkout" placeholder="Workout focus"/></article>
+</div>
+<label>Bliss Notes<textarea id="blissNotes"></textarea></label>
+</section>
+<section class="panel workspace-intro workspace-panel" data-workspace="money" data-workspace-intro="money">
+<p class="eyebrow">MONEY WORKSPACE</p>
+<div class="workspace-intro-row">
+<div>
+<h2>Money &amp; Bills</h2>
+<p class="intelligence-context">Keep due dates visible without carrying them in your head.</p>
+</div>
+<button class="workspace-home-button" data-workspace-target="today" type="button">Return to Today</button>
+</div>
+</section><section class="panel workspace-panel" data-workspace="money">
+<div class="section-heading"><div><p class="eyebrow">MONEY &amp; BILLS</p><h2>Due Dates</h2></div></div>
+<form class="form-grid" id="billForm">
+<label>Bill<input id="billName" required=""/></label>
+<label>Amount<input id="billAmount" step="0.01" type="number"/></label>
+<label>Due Date<input id="billDate" required="" type="date"/></label>
+<button type="submit">Add Bill</button>
+</form>
+<ul class="clean-list" id="bills"></ul>
+</section>
+<section class="panel workspace-panel" data-workspace="health">
+<div class="section-heading"><div><p class="eyebrow">APPOINTMENT PREP</p><h2>Medical &amp; Personal Notes</h2></div></div>
+<div class="form-grid">
+<label>Purpose<input id="appointmentPurpose"/></label>
+<label>Follow-up Date<input id="followUpDate" type="date"/></label>
+<label class="wide">Questions<textarea id="appointmentQuestions"></textarea></label>
+<label class="wide">Notes<textarea id="appointmentNotes"></textarea></label>
+<label class="wide">Next Step<textarea id="appointmentNextStep"></textarea></label>
+</div>
+</section>
+<section class="panel data-vault workspace-panel" data-workspace="today" id="dataVault">
+<div class="section-heading">
+<div>
+<p class="eyebrow">DATA VAULT</p>
+<h2>Protect What You’ve Built</h2>
+<p class="intelligence-context">
+            Export a complete backup before travel, or move your current data to another device manually.
+          </p>
+</div>
+<span class="status-pill" id="vaultStatus">LOCAL DATA</span>
+</div>
+<div class="vault-grid">
+<article>
+<span class="intelligence-label">BACKUP</span>
+<strong>Download one complete DragonFly file.</strong>
+<p>Includes health, missions, journal, tasks, countdowns, bills, Bliss, and daily focus.</p>
+<button id="exportAllDataButton" type="button">Export Complete Backup</button>
+</article>
+<article>
+<span class="intelligence-label">RESTORE / MOVE DEVICE</span>
+<strong>Import a DragonFly backup.</strong>
+<p>This replaces matching DragonFly data on this browser only.</p>
+<label class="file-import-label">
+            Choose Backup File
+            <input accept="application/json,.json" id="importAllDataInput" type="file"/>
+</label>
+</article>
+</div>
+</section><section class="panel cloud-mirror-panel workspace-panel" data-workspace="cloud" id="cloudMirrorWorkspace">
+<div class="section-heading">
+<div>
+<p class="eyebrow">DRAGONFLY CLOUD</p>
+<h2>Cloud Mirror</h2>
+<p class="intelligence-context">
+            Keep the same Command Center data on your Mac, iPhone, and iPad while preserving offline use.
+          </p>
+</div>
+<span class="status-pill" id="cloudMirrorStatus">NOT CONFIGURED</span>
+</div>
+<div class="cloud-overview-grid">
+<article class="cloud-status-card">
+<span class="intelligence-label">ACCOUNT</span>
+<strong id="cloudAccountLabel">Not signed in</strong>
+<p id="cloudAccountDetail">Connect your private Supabase project, then sign in by email.</p>
+</article>
+<article class="cloud-status-card">
+<span class="intelligence-label">MIRROR STATUS</span>
+<strong id="cloudSyncHeadline">Local data is safe on this device.</strong>
+<p id="cloudLastSync">No cloud synchronization yet.</p>
+</article>
+<article class="cloud-status-card">
+<span class="intelligence-label">CONFLICT RULE</span>
+<strong>Latest saved change wins.</strong>
+<p>A safety backup is created before cloud data replaces local data.</p>
+</article>
+</div>
+<details class="cloud-setup" id="cloudSetupDetails" open="">
+<summary>Cloud setup</summary>
+<p class="intelligence-context">
+          Paste the Project URL and public anon key from your Supabase project. These identify your project; the anon key is designed for browser apps and your private rows are protected by sign-in and Row Level Security.
+        </p>
+<div class="form-grid cloud-config-grid">
+<label class="wide">Supabase Project URL
+            <input autocomplete="off" id="cloudProjectUrl" placeholder="https://your-project.supabase.co" type="url"/>
+</label>
+<label class="wide">Supabase Anon Key
+            <textarea autocomplete="off" id="cloudAnonKey" placeholder="Paste the public anon key" rows="4"></textarea>
+</label>
+<button id="cloudSaveConfigButton" type="button">Save Cloud Configuration</button>
+<button class="quiet-button" id="cloudClearConfigButton" type="button">Remove Configuration</button>
+</div>
+</details>
+<div class="cloud-auth-card">
+<div>
+<span class="intelligence-label">PRIVATE SIGN-IN</span>
+<h3>Send a secure sign-in link</h3>
+<p>Use the same email on every device. No password is stored inside DragonFly Lotus.</p>
+</div>
+<div class="cloud-auth-actions">
+<input autocomplete="email" id="cloudEmail" placeholder="you@example.com" type="email"/>
+<button id="cloudSignInButton" type="button">Email My Sign-In Link</button>
+<button class="quiet-button" hidden="" id="cloudSignOutButton" type="button">Sign Out</button>
+</div>
+<p class="cloud-message" id="cloudAuthMessage"></p>
+</div>
+<div class="cloud-control-grid">
+<article>
+<span class="intelligence-label">SYNC NOW</span>
+<strong>Manually compare this device with the cloud.</strong>
+<p>Normal changes synchronize automatically while online.</p>
+<button disabled="" id="cloudSyncNowButton" type="button">Synchronize Now</button>
+</article>
+<article>
+<span class="intelligence-label">FIRST CONNECTION</span>
+<strong id="cloudFirstSyncRule">Your local data stays in place.</strong>
+<p>If the cloud is empty, this device uploads first. If cloud data already exists, the newest copy wins.</p>
+</article>
+<article>
+<span class="intelligence-label">OFFLINE-FIRST</span>
+<strong>Keep using Lotus without a signal.</strong>
+<p>Changes wait locally and mirror after internet access returns.</p>
+</article>
+</div>
+<div class="cloud-log-wrap">
+<div class="journal-history-header">
+<div>
+<span class="intelligence-label">RECENT CLOUD ACTIVITY</span>
+<p class="intelligence-context">The latest synchronization messages on this device.</p>
+</div>
+<button class="quiet-button" id="cloudClearLogButton" type="button">Clear Log</button>
+</div>
+<div class="cloud-activity-log" id="cloudActivityLog"></div>
+</div>
+</section></main>
+<footer>One day. One mission. One intentional life.</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="app.js"></script><script src="cloud-sync.js"></script>
+<script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").catch((error) => {

@@ -1,9 +1,10 @@
-const CACHE_NAME = "dragonfly-lotus-v3-1";
+const CACHE_NAME = "dragonfly-lotus-v6-0-cloud-mirror";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./cloud-sync.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

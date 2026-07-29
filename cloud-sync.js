@@ -1,0 +1,572 @@
+/* DragonFly Lotus V6 — Local-first Supabase Cloud Mirror */
+(() => {
+  "use strict";
+
+  const CONFIG_KEY = "dragonflyLotusCloudConfig";
+  const META_KEY = "dragonflyLotusCloudMeta";
+  const LOG_KEY = "dragonflyLotusCloudLog";
+  const BACKUP_KEY = "dragonflyLotusCloudSafetyBackup";
+  const ACTIVE_WORKSPACE_KEY = "dragonflyLotusActiveWorkspace";
+  const DATA_PREFIX = "dragonflyLotus";
+  const TABLE_NAME = "dragonfly_cloud_state";
+  const DEVICE_ID_KEY = "dragonflyLotusDeviceId";
+  const CLOUD_EVENT = "dragonfly-cloud-status";
+
+  const state = {
+    client: null,
+    session: null,
+    user: null,
+    channel: null,
+    configured: false,
+    syncing: false,
+    applyingRemote: false,
+    pendingPush: false,
+    debounceTimer: null,
+    lastRemoteUpdatedAt: null
+  };
+
+  const originalSetItem = Storage.prototype.setItem;
+  const originalRemoveItem = Storage.prototype.removeItem;
+
+  function id() {
+    if (crypto?.randomUUID) return crypto.randomUUID();
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function getDeviceId() {
+    let value = localStorage.getItem(DEVICE_ID_KEY);
+    if (!value) {
+      value = id();
+      originalSetItem.call(localStorage, DEVICE_ID_KEY, value);
+    }
+    return value;
+  }
+
+  function safeJSON(raw, fallback) {
+    try { return JSON.parse(raw); } catch { return fallback; }
+  }
+
+  function config() {
+    return safeJSON(localStorage.getItem(CONFIG_KEY), {});
+  }
+
+  function meta() {
+    return safeJSON(localStorage.getItem(META_KEY), {
+      localChangedAt: null,
+      lastSyncedAt: null,
+      lastRemoteUpdatedAt: null,
+      dirty: false
+    });
+  }
+
+  function saveMeta(patch) {
+    const next = { ...meta(), ...patch };
+    originalSetItem.call(localStorage, META_KEY, JSON.stringify(next));
+    return next;
+  }
+
+  function isDragonFlyDataKey(key) {
+    if (!key) return false;
+    if (key === CONFIG_KEY || key === META_KEY || key === LOG_KEY || key === BACKUP_KEY || key === DEVICE_ID_KEY) return false;
+    return key.startsWith(DATA_PREFIX) || key === ACTIVE_WORKSPACE_KEY;
+  }
+
+  function collectPayload() {
+    const payload = {};
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!isDragonFlyDataKey(key)) continue;
+      const raw = localStorage.getItem(key);
+      payload[key] = safeJSON(raw, raw);
+    }
+    return payload;
+  }
+
+  function createSafetyBackup(reason, payload = collectPayload()) {
+    const backup = {
+      createdAt: new Date().toISOString(),
+      reason,
+      payload
+    };
+    originalSetItem.call(localStorage, BACKUP_KEY, JSON.stringify(backup));
+  }
+
+  function applyPayload(payload, remoteUpdatedAt) {
+    if (!payload || typeof payload !== "object") return;
+    createSafetyBackup("Before applying cloud data");
+    state.applyingRemote = true;
+    try {
+      Object.entries(payload).forEach(([key, value]) => {
+        if (!isDragonFlyDataKey(key)) return;
+        originalSetItem.call(
+          localStorage,
+          key,
+          typeof value === "string" ? value : JSON.stringify(value)
+        );
+      });
+      saveMeta({
+        dirty: false,
+        lastSyncedAt: new Date().toISOString(),
+        lastRemoteUpdatedAt: remoteUpdatedAt || new Date().toISOString()
+      });
+    } finally {
+      state.applyingRemote = false;
+    }
+  }
+
+  function addLog(message, type = "info") {
+    const entries = safeJSON(localStorage.getItem(LOG_KEY), []);
+    entries.unshift({
+      id: id(),
+      at: new Date().toISOString(),
+      message,
+      type
+    });
+    const trimmed = entries.slice(0, 20);
+    originalSetItem.call(localStorage, LOG_KEY, JSON.stringify(trimmed));
+    renderLog();
+  }
+
+  function renderLog() {
+    const container = document.getElementById("cloudActivityLog");
+    if (!container) return;
+    const entries = safeJSON(localStorage.getItem(LOG_KEY), []);
+    container.innerHTML = "";
+    if (!entries.length) {
+      const empty = document.createElement("p");
+      empty.className = "cloud-log-empty";
+      empty.textContent = "No cloud activity yet.";
+      container.append(empty);
+      return;
+    }
+    entries.slice(0, 8).forEach(entry => {
+      const article = document.createElement("article");
+      article.className = "cloud-log-entry";
+      const time = document.createElement("time");
+      time.dateTime = entry.at;
+      time.textContent = new Date(entry.at).toLocaleString([], {
+        month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+      });
+      const message = document.createElement("span");
+      message.textContent = entry.message;
+      article.append(time, message);
+      container.append(article);
+    });
+  }
+
+  function setStatus(label, mode = "") {
+    ["cloudHeaderStatus", "cloudMirrorStatus"].forEach(elementId => {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      element.textContent = label;
+      element.classList.remove("is-connected", "is-syncing", "is-error");
+      if (mode) element.classList.add(`is-${mode}`);
+    });
+    window.dispatchEvent(new CustomEvent(CLOUD_EVENT, { detail: { label, mode } }));
+  }
+
+  function setAuthMessage(message, mode = "") {
+    const element = document.getElementById("cloudAuthMessage");
+    if (!element) return;
+    element.textContent = message;
+    element.classList.remove("is-success", "is-error");
+    if (mode) element.classList.add(`is-${mode}`);
+  }
+
+  function renderAccount() {
+    const label = document.getElementById("cloudAccountLabel");
+    const detail = document.getElementById("cloudAccountDetail");
+    const signOut = document.getElementById("cloudSignOutButton");
+    const syncNow = document.getElementById("cloudSyncNowButton");
+
+    if (state.user) {
+      if (label) label.textContent = state.user.email || "Signed in";
+      if (detail) detail.textContent = "This identity owns the private cloud row used by your devices.";
+      if (signOut) signOut.hidden = false;
+      if (syncNow) syncNow.disabled = false;
+    } else {
+      if (label) label.textContent = state.configured ? "Configuration saved — sign in next" : "Not signed in";
+      if (detail) detail.textContent = state.configured
+        ? "Use the same email on every DragonFly Lotus device."
+        : "Connect your private Supabase project, then sign in by email.";
+      if (signOut) signOut.hidden = true;
+      if (syncNow) syncNow.disabled = true;
+    }
+  }
+
+  function renderSyncMeta() {
+    const current = meta();
+    const headline = document.getElementById("cloudSyncHeadline");
+    const last = document.getElementById("cloudLastSync");
+    if (headline) {
+      headline.textContent = current.dirty
+        ? "This device has changes waiting to mirror."
+        : state.user
+          ? "This device and cloud are aligned."
+          : "Local data is safe on this device.";
+    }
+    if (last) {
+      last.textContent = current.lastSyncedAt
+        ? `Last synchronized ${new Date(current.lastSyncedAt).toLocaleString()}.`
+        : "No cloud synchronization yet.";
+    }
+  }
+
+  function markLocalChanged(key) {
+    if (!isDragonFlyDataKey(key) || state.applyingRemote) return;
+    saveMeta({
+      dirty: true,
+      localChangedAt: new Date().toISOString()
+    });
+    renderSyncMeta();
+    schedulePush();
+  }
+
+  Storage.prototype.setItem = function(key, value) {
+    originalSetItem.call(this, key, value);
+    if (this === localStorage) markLocalChanged(key);
+  };
+
+  Storage.prototype.removeItem = function(key) {
+    originalRemoveItem.call(this, key);
+    if (this === localStorage) markLocalChanged(key);
+  };
+
+  function schedulePush() {
+    if (!state.user || !navigator.onLine) {
+      state.pendingPush = true;
+      return;
+    }
+    clearTimeout(state.debounceTimer);
+    state.debounceTimer = setTimeout(() => pushLocal("Automatic mirror"), 1200);
+  }
+
+  async function initializeClient() {
+    const saved = config();
+    state.configured = Boolean(saved.url && saved.anonKey);
+    renderAccount();
+
+    const urlField = document.getElementById("cloudProjectUrl");
+    const keyField = document.getElementById("cloudAnonKey");
+    if (urlField) urlField.value = saved.url || "";
+    if (keyField) keyField.value = saved.anonKey || "";
+
+    if (!state.configured) {
+      setStatus("Cloud not configured");
+      return;
+    }
+    if (!window.supabase?.createClient) {
+      setStatus("Cloud library unavailable", "error");
+      addLog("Supabase library did not load. Check the internet connection.", "error");
+      return;
+    }
+
+    state.client = window.supabase.createClient(saved.url, saved.anonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      },
+      realtime: {
+        params: { eventsPerSecond: 2 }
+      }
+    });
+
+    const { data: { session } } = await state.client.auth.getSession();
+    await handleSession(session);
+
+    state.client.auth.onAuthStateChange((_event, sessionValue) => {
+      setTimeout(() => handleSession(sessionValue), 0);
+    });
+  }
+
+  async function handleSession(session) {
+    state.session = session || null;
+    state.user = session?.user || null;
+    renderAccount();
+
+    if (!state.user) {
+      setStatus("Configured • Sign in required");
+      if (state.channel && state.client) {
+        await state.client.removeChannel(state.channel);
+        state.channel = null;
+      }
+      return;
+    }
+
+    setStatus("Cloud connected", "connected");
+    setAuthMessage("Signed in. DragonFly Cloud is ready.", "success");
+    addLog(`Signed in as ${state.user.email || "your account"}.`);
+    await subscribeRealtime();
+    await synchronize("Sign-in synchronization");
+  }
+
+  async function subscribeRealtime() {
+    if (!state.client || !state.user) return;
+    if (state.channel) await state.client.removeChannel(state.channel);
+
+    state.channel = state.client
+      .channel(`dragonfly-cloud-${state.user.id}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: TABLE_NAME,
+        filter: `user_id=eq.${state.user.id}`
+      }, payload => {
+        const row = payload.new;
+        if (!row?.payload || row.device_id === getDeviceId()) return;
+        handleRemoteRow(row, "Realtime update");
+      })
+      .subscribe(status => {
+        if (status === "SUBSCRIBED") addLog("Realtime cloud mirror is listening.");
+      });
+  }
+
+  async function fetchRemote() {
+    const { data, error } = await state.client
+      .from(TABLE_NAME)
+      .select("user_id,payload,revision,device_id,updated_at")
+      .eq("user_id", state.user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data || null;
+  }
+
+  async function pushLocal(reason = "Manual synchronization") {
+    if (!state.client || !state.user || state.syncing) return;
+    if (!navigator.onLine) {
+      state.pendingPush = true;
+      saveMeta({ dirty: true });
+      setStatus("Offline • Changes waiting", "syncing");
+      renderSyncMeta();
+      return;
+    }
+
+    state.syncing = true;
+    setStatus("Mirroring changes…", "syncing");
+    try {
+      const currentMeta = meta();
+      const remote = await fetchRemote();
+      const revision = Number(remote?.revision || 0) + 1;
+      const row = {
+        user_id: state.user.id,
+        payload: collectPayload(),
+        revision,
+        device_id: getDeviceId(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await state.client
+        .from(TABLE_NAME)
+        .upsert(row, { onConflict: "user_id" })
+        .select("updated_at,revision")
+        .single();
+
+      if (error) throw error;
+      saveMeta({
+        dirty: false,
+        lastSyncedAt: new Date().toISOString(),
+        lastRemoteUpdatedAt: data.updated_at
+      });
+      state.pendingPush = false;
+      setStatus("Cloud mirrored", "connected");
+      addLog(`${reason} completed.`);
+    } catch (error) {
+      setStatus("Cloud mirror needs attention", "error");
+      addLog(error.message || "Cloud upload failed.", "error");
+      console.error("DragonFly Cloud push failed:", error);
+    } finally {
+      state.syncing = false;
+      renderSyncMeta();
+    }
+  }
+
+  function newestSide(remote) {
+    const currentMeta = meta();
+    const localTime = Date.parse(currentMeta.localChangedAt || 0);
+    const remoteTime = Date.parse(remote?.updated_at || 0);
+    if (!remote) return "local";
+    if (!currentMeta.dirty) return "remote";
+    return localTime > remoteTime ? "local" : "remote";
+  }
+
+  async function handleRemoteRow(remote, reason) {
+    if (!remote || state.syncing) return;
+    const lastSeen = Date.parse(meta().lastRemoteUpdatedAt || 0);
+    const remoteTime = Date.parse(remote.updated_at || 0);
+    if (remoteTime <= lastSeen) return;
+
+    if (newestSide(remote) === "local") {
+      await pushLocal(`${reason}: kept newer device changes`);
+      return;
+    }
+
+    applyPayload(remote.payload, remote.updated_at);
+    setStatus("Cloud update received", "connected");
+    addLog(`${reason} received from another device.`);
+    renderSyncMeta();
+    setTimeout(() => location.reload(), 500);
+  }
+
+  async function synchronize(reason = "Manual synchronization") {
+    if (!state.client || !state.user || state.syncing) return;
+    if (!navigator.onLine) {
+      setStatus("Offline • Local mode", "syncing");
+      state.pendingPush = true;
+      return;
+    }
+
+    state.syncing = true;
+    setStatus("Comparing device and cloud…", "syncing");
+    try {
+      const remote = await fetchRemote();
+      if (!remote) {
+        state.syncing = false;
+        await pushLocal("First cloud upload");
+        return;
+      }
+
+      const winner = newestSide(remote);
+      if (winner === "local") {
+        state.syncing = false;
+        await pushLocal(reason);
+        return;
+      }
+
+      applyPayload(remote.payload, remote.updated_at);
+      setStatus("Cloud mirrored", "connected");
+      addLog(`${reason}: cloud copy restored to this device.`);
+      renderSyncMeta();
+      setTimeout(() => location.reload(), 500);
+    } catch (error) {
+      setStatus("Cloud mirror needs attention", "error");
+      addLog(error.message || "Synchronization failed.", "error");
+      console.error("DragonFly Cloud sync failed:", error);
+    } finally {
+      state.syncing = false;
+      renderSyncMeta();
+    }
+  }
+
+  async function saveConfiguration() {
+    const url = document.getElementById("cloudProjectUrl")?.value.trim() || "";
+    const anonKey = document.getElementById("cloudAnonKey")?.value.trim() || "";
+    if (!/^https:\/\/.+\.supabase\.co\/?$/.test(url) || anonKey.length < 40) {
+      setAuthMessage("Please enter a valid Supabase Project URL and anon key.", "error");
+      return;
+    }
+    originalSetItem.call(localStorage, CONFIG_KEY, JSON.stringify({
+      url: url.replace(/\/$/, ""),
+      anonKey
+    }));
+    setAuthMessage("Cloud configuration saved. Sign in next.", "success");
+    addLog("Supabase project configuration saved.");
+    location.reload();
+  }
+
+  async function clearConfiguration() {
+    if (state.client) await state.client.auth.signOut();
+    originalRemoveItem.call(localStorage, CONFIG_KEY);
+    originalRemoveItem.call(localStorage, META_KEY);
+    setAuthMessage("Cloud configuration removed. Local DragonFly data was not deleted.", "success");
+    addLog("Cloud configuration removed; local data preserved.");
+    setTimeout(() => location.reload(), 400);
+  }
+
+  async function signIn() {
+    if (!state.client) {
+      setAuthMessage("Save the cloud configuration first.", "error");
+      return;
+    }
+    const email = document.getElementById("cloudEmail")?.value.trim() || "";
+    if (!email.includes("@")) {
+      setAuthMessage("Enter the email you will use on every device.", "error");
+      return;
+    }
+    setAuthMessage("Sending your secure sign-in link…");
+    const { error } = await state.client.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${location.origin}${location.pathname}#cloud`
+      }
+    });
+    if (error) {
+      setAuthMessage(error.message, "error");
+      addLog(`Sign-in link failed: ${error.message}`, "error");
+      return;
+    }
+    originalSetItem.call(localStorage, "dragonflyLotusCloudEmail", email);
+    setAuthMessage("Check your email and open the sign-in link on this device.", "success");
+    addLog(`Secure sign-in link sent to ${email}.`);
+  }
+
+  async function signOut() {
+    if (state.client) await state.client.auth.signOut();
+    state.user = null;
+    state.session = null;
+    setStatus("Configured • Signed out");
+    setAuthMessage("Signed out. Local data remains on this device.", "success");
+    addLog("Signed out of DragonFly Cloud.");
+    renderAccount();
+  }
+
+  function bindUI() {
+    document.getElementById("cloudSaveConfigButton")?.addEventListener("click", saveConfiguration);
+    document.getElementById("cloudClearConfigButton")?.addEventListener("click", clearConfiguration);
+    document.getElementById("cloudSignInButton")?.addEventListener("click", signIn);
+    document.getElementById("cloudSignOutButton")?.addEventListener("click", signOut);
+    document.getElementById("cloudSyncNowButton")?.addEventListener("click", () => synchronize());
+    document.getElementById("cloudClearLogButton")?.addEventListener("click", () => {
+      originalSetItem.call(localStorage, LOG_KEY, JSON.stringify([]));
+      renderLog();
+    });
+
+    const email = localStorage.getItem("dragonflyLotusCloudEmail");
+    const emailField = document.getElementById("cloudEmail");
+    if (email && emailField) emailField.value = email;
+
+    window.addEventListener("online", () => {
+      addLog("Internet connection restored.");
+      if (state.user) synchronize("Connection restored");
+    });
+    window.addEventListener("offline", () => {
+      setStatus("Offline • Local mode", "syncing");
+      addLog("Offline mode active. Changes will wait on this device.");
+    });
+
+    window.addEventListener("dragonfly-data-change", () => {
+      saveMeta({ dirty: true, localChangedAt: new Date().toISOString() });
+      schedulePush();
+    });
+
+    renderLog();
+    renderSyncMeta();
+  }
+
+  async function init() {
+    getDeviceId();
+    bindUI();
+    try {
+      await initializeClient();
+    } catch (error) {
+      setStatus("Cloud setup error", "error");
+      setAuthMessage(error.message || "Cloud initialization failed.", "error");
+      addLog(error.message || "Cloud initialization failed.", "error");
+      console.error(error);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+
+  window.DragonFlyCloud = {
+    synchronize,
+    pushLocal,
+    collectPayload,
+    createSafetyBackup
+  };
+})();

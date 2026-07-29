@@ -1,51 +1,48 @@
-# DragonFly Lotus V3.1 — Permanent Home
+# DragonFly Lotus V6.0 — Cloud Mirror
 
-V3.1 turns DragonFly Lotus into a GitHub Pages progressive web app.
+V6 adds secure, local-first cross-device mirroring using Supabase.
 
-## What this solves
+## Included
 
-- No Python server to restart
-- No port 8000
-- No Public/Private port setting
-- No temporary Codespaces preview address
-- A permanent GitHub Pages URL
-- Add-to-Home-Screen support on iPhone and iPad
-- Basic offline app-shell support after the first successful load
+- New **Cloud** workspace
+- Passwordless email sign-in
+- Automatic mirroring of DragonFly localStorage data
+- Mac, iPhone, and iPad support
+- Realtime updates from other devices
+- Offline queueing and reconnect synchronization
+- Latest-write-wins conflict handling
+- Safety backup before remote data replaces local data
+- Manual **Synchronize Now**
+- Cloud activity log and visible connection status
+- `SUPABASE_SETUP.sql` with Row Level Security policies
+- `CLOUD_SETUP.md` with one-time setup instructions
+
+## Important
+
+The cloud code is complete, but it cannot know your personal Supabase Project
+URL or public anon key until you create the private project and paste those
+values into the Cloud workspace.
 
 ## Install in Codespaces
 
-Upload this ZIP to the repository root, then run:
-
 ```bash
-unzip -o DragonFly_Lotus_v3_1_GitHub_Pages_PWA.zip
-```
-
-Commit and push:
-
-```bash
+unzip -o DragonFly_Lotus_v6_0_Cloud_Mirror.zip
 git add .
-git commit -m "DragonFly Lotus V3.1 - Permanent GitHub Pages home"
+git commit -m "DragonFly Lotus V6.0 - Cloud Mirror"
 git push
 ```
 
-## Enable GitHub Pages once
+Wait for GitHub Pages to deploy, reload the permanent website, then open the
+**Cloud** workspace and follow `CLOUD_SETUP.md`.
 
-In the GitHub repository:
+## V6 confirmation markers
 
-1. Open Settings.
-2. Select Pages.
-3. Under Build and deployment, choose **GitHub Actions**.
-4. Open the Actions tab and wait for the Pages deployment to finish.
+- `V5.0` may still appear as the UI foundation version chip.
+- A new **Cloud** workspace appears in navigation.
+- Header status says **Cloud not connected** until configured.
+- The Cloud workspace contains setup, email sign-in, sync status, and activity.
 
-The permanent site should then be:
+## Security
 
-`https://rendahobbsmarsh-bit.github.io/dragonfly-lotus-command-center/`
-
-## Phone and iPad
-
-Open the permanent URL in Safari, tap Share, and choose Add to Home Screen.
-
-## Important data note
-
-The website will be permanent, but browser data is still local to each device.
-Phone, iPad, and Mac will not mirror until cloud sync is added.
+Use only the Supabase public anon key in the browser. Never paste the
+`service_role` key into DragonFly Lotus.
