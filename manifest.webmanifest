@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V7.2 — Connected Intelligence",
+  "name": "DragonFly Lotus V7.3 — Connected Intelligence",
   "short_name": "DragonFly Lotus",
-  "description": "Correct cloud state reporting for authenticated, configured, database-ready, offline, and setup-required conditions.",
+  "description": "Reliable first cloud mirror with bounded database requests, automatic first upload, and non-blocking realtime startup.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

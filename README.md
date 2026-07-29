@@ -1,41 +1,34 @@
-# DragonFly Lotus V7.2 — Cloud State Correction
+# DragonFly Lotus V7.3 — First Mirror Handshake
 
-This correction separates three different conditions that V7.1 previously
-combined:
+This patch fixes the Cloud page remaining on:
 
-1. Supabase configuration saved
-2. Account signed in
-3. Database mirror operational
+`Signed in. Checking the DragonFly data mirror…`
 
-## What changes
+## Corrections
 
-- A successful sign-in no longer falsely claims the data mirror is finished.
-- Missing database setup now says:
-  `Signed in • Database setup required`
-- Missing Row Level Security policies now say:
-  `Signed in • Security setup required`
-- Offline status preserves the fact that the account is signed in.
-- A successful data read/write changes the header to:
-  `Cloud connected`
-- Specific setup guidance remains visible instead of being overwritten.
-- `DragonFlyCloud.status()` is available in the browser console for diagnostics.
-- Visible version marker is V7.2.
+- The first database request now has a 10-second timeout.
+- An empty cloud automatically receives the current device as the first master copy.
+- Realtime listening starts only after the first read/write succeeds.
+- Realtime startup cannot hold the sign-in screen indefinitely.
+- First-mirror progress messages explain what DragonFly Lotus is doing.
+- Successful completion displays `Cloud connected`.
+- A timeout provides a retry message instead of spinning forever.
+- Visible version marker is V7.3.
 
 ## Install
 
 ```bash
-unzip -o DragonFly_Lotus_v7_2_Cloud_State_Correction.zip
+unzip -o DragonFly_Lotus_v7_3_First_Mirror_Handshake.zip
 git add .
-git commit -m "DragonFly Lotus V7.2 - Cloud state correction"
+git commit -m "DragonFly Lotus V7.3 - First mirror handshake"
 git push
 ```
 
 After deployment:
 
-1. Reload with Command + Shift + R.
-2. Sign in.
-3. Read the exact Cloud status.
-4. If it says database setup required, run `SUPABASE_SETUP.sql` in Supabase.
-5. Select Synchronize Now.
-6. When it says Cloud connected, sign into the other devices and begin the
-   one-week field test.
+1. Reload the permanent site with Command + Shift + R.
+2. Confirm the badge says V7.3.
+3. Open Cloud and sign in.
+4. Wait up to 10 seconds.
+5. The first device should upload automatically and display `Cloud connected`.
+6. Sign in on the other devices with the same account.

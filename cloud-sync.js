@@ -1,4 +1,4 @@
-/* DragonFly Lotus V7.2 — Cloud State Correction */
+/* DragonFly Lotus V7.3 — First Mirror Handshake */
 (() => {
   "use strict";
 
@@ -214,6 +214,14 @@
       };
     }
 
+    if (code === "DRAGONFLY_TIMEOUT") {
+      return {
+        kind: "timeout",
+        headline: "Signed in • First mirror timed out",
+        message: "The account is connected, but Supabase did not finish the first mirror request. Select Synchronize Now to retry."
+      };
+    }
+
     if (
       lower.includes("failed to fetch") ||
       lower.includes("network") ||
@@ -287,9 +295,32 @@
       setCloudState("security-required", classified.message);
     } else if (classified.kind === "network") {
       setCloudState("offline", classified.message);
+    } else if (classified.kind === "timeout") {
+      setStatus("Signed in • First mirror timed out", "error");
     } else {
       setCloudState("error", classified.message);
     }
+  }
+
+  function withTimeout(promise, milliseconds, label) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new Error(`${label} took longer than ${Math.round(milliseconds / 1000)} seconds.`);
+        error.code = "DRAGONFLY_TIMEOUT";
+        reject(error);
+      }, milliseconds);
+    });
+
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+
+  function firstMirrorMessage(message, mode = "") {
+    const headline = document.getElementById("cloudSyncHeadline");
+    const last = document.getElementById("cloudLastSync");
+    if (headline) headline.textContent = message;
+    if (last) last.textContent = "Your local DragonFly data remains safely on this device during the first connection.";
+    setAuthMessage(message, mode);
   }
 
   function renderAccount() {
@@ -441,39 +472,67 @@
     }
 
     setCloudState("syncing");
-    setAuthMessage("Signed in. Checking the DragonFly data mirror…", "success");
+    firstMirrorMessage("Signed in. Starting the first DragonFly mirror…", "success");
     addLog(`Signed in as ${state.user.email || "your account"}.`);
-    await subscribeRealtime();
+
+    // The first database comparison must complete before realtime listening matters.
+    // Realtime is started afterward and is never allowed to hold the sign-in screen.
     await synchronize("Sign-in synchronization");
+
+    if (state.databaseReady) {
+      subscribeRealtime().catch(error => {
+        addLog(`Realtime listener could not start: ${error.message || error}`, "error");
+        console.error("DragonFly realtime subscription failed:", error);
+      });
+    }
   }
 
   async function subscribeRealtime() {
     if (!state.client || !state.user) return;
-    if (state.channel) await state.client.removeChannel(state.channel);
+    if (state.channel) {
+      await withTimeout(
+        state.client.removeChannel(state.channel),
+        5000,
+        "Closing the previous realtime listener"
+      ).catch(() => {});
+    }
 
-    state.channel = state.client
-      .channel(`dragonfly-cloud-${state.user.id}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: TABLE_NAME,
-        filter: `user_id=eq.${state.user.id}`
-      }, payload => {
-        const row = payload.new;
-        if (!row?.payload || row.device_id === getDeviceId()) return;
-        handleRemoteRow(row, "Realtime update");
-      })
-      .subscribe(status => {
-        if (status === "SUBSCRIBED") addLog("Realtime cloud mirror is listening.");
-      });
+    await withTimeout(new Promise((resolve, reject) => {
+      state.channel = state.client
+        .channel(`dragonfly-cloud-${state.user.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: TABLE_NAME,
+          filter: `user_id=eq.${state.user.id}`
+        }, payload => {
+          const row = payload.new;
+          if (!row?.payload || row.device_id === getDeviceId()) return;
+          handleRemoteRow(row, "Realtime update");
+        })
+        .subscribe(status => {
+          if (status === "SUBSCRIBED") {
+            addLog("Realtime cloud mirror is listening.");
+            resolve();
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            reject(new Error(`Realtime listener status: ${status}`));
+          }
+        });
+    }), 8000, "Starting the realtime listener");
   }
 
   async function fetchRemote() {
-    const { data, error } = await state.client
+    const request = state.client
       .from(TABLE_NAME)
       .select("user_id,payload,revision,device_id,updated_at")
       .eq("user_id", state.user.id)
       .maybeSingle();
+
+    const { data, error } = await withTimeout(
+      request,
+      10000,
+      "The first cloud database check"
+    );
 
     if (error) throw error;
     state.databaseReady = true;
@@ -504,11 +563,21 @@
         updated_at: new Date().toISOString()
       };
 
-      const { data, error } = await state.client
+      if (!remote) {
+        firstMirrorMessage("Cloud is empty. Uploading this device as the first master copy…", "success");
+      }
+
+      const request = state.client
         .from(TABLE_NAME)
         .upsert(row, { onConflict: "user_id" })
         .select("updated_at,revision")
         .single();
+
+      const { data, error } = await withTimeout(
+        request,
+        10000,
+        "Uploading the first DragonFly cloud copy"
+      );
 
       if (error) throw error;
       saveMeta({
@@ -519,6 +588,7 @@
       state.pendingPush = false;
       state.databaseReady = true;
       setCloudState("connected");
+      setAuthMessage("Signed in. DragonFly Cloud is connected.", "success");
       addLog(`${reason} completed.`);
     } catch (error) {
       const classified = classifyCloudError(error);
@@ -561,26 +631,37 @@
   }
 
   async function synchronize(reason = "Manual synchronization") {
-    if (!state.client || !state.user || state.syncing) return;
+    if (!state.client || !state.user) return;
+    if (state.syncing) {
+      addLog("A synchronization is already in progress.");
+      return;
+    }
     if (!navigator.onLine) {
       setCloudState("offline");
       state.pendingPush = true;
+      renderSyncMeta();
       return;
     }
 
     state.syncing = true;
     setCloudState("syncing");
+
     try {
       const remote = await fetchRemote();
+
       if (!remote) {
+        // Release the lock before calling pushLocal, which manages its own lock.
         state.syncing = false;
+        firstMirrorMessage("Cloud is empty. Creating your first DragonFly cloud copy…", "success");
         await pushLocal("First cloud upload");
         return;
       }
 
       const winner = newestSide(remote);
+
       if (winner === "local") {
         state.syncing = false;
+        firstMirrorMessage("This device has the newest changes. Uploading them now…", "success");
         await pushLocal(reason);
         return;
       }
@@ -588,12 +669,16 @@
       applyPayload(remote.payload, remote.updated_at);
       state.databaseReady = true;
       setCloudState("connected");
+      setAuthMessage("Signed in. DragonFly Cloud is connected.", "success");
       addLog(`${reason}: cloud copy restored to this device.`);
       renderSyncMeta();
-      setTimeout(() => location.reload(), 500);
+
+      // Reload only after the successful state is visible.
+      setTimeout(() => location.reload(), 900);
     } catch (error) {
       const classified = classifyCloudError(error);
-      state.databaseReady = classified.kind === "database-missing" ? false : state.databaseReady;
+      state.databaseReady =
+        classified.kind === "database-missing" ? false : state.databaseReady;
       showCloudSetupGuidance(classified);
       addLog(classified.message, "error");
       console.error("DragonFly Cloud sync failed:", error);
