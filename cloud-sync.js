@@ -1,8 +1,12 @@
-/* DragonFly Lotus V7.4 — Stop Reload Loop */
+/* DragonFly Lotus V8.0 — Zero Configuration Devices */
 (() => {
   "use strict";
 
   const CONFIG_KEY = "dragonflyLotusCloudConfig";
+  const DEFAULT_CLOUD_CONFIG = Object.freeze({
+    url: "https://sontzpftmvztbwhgthjt.supabase.co",
+    anonKey: "sb_publishable_n49OAYWHgvGyYIWx7cmjcQ_yq5m3zxR"
+  });
   const META_KEY = "dragonflyLotusCloudMeta";
   const LOG_KEY = "dragonflyLotusCloudLog";
   const BACKUP_KEY = "dragonflyLotusCloudSafetyBackup";
@@ -57,6 +61,42 @@
   function config() {
     const saved = safeJSON(localStorage.getItem(CONFIG_KEY), {});
     return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  }
+
+  function ensureDefaultCloudConfig() {
+    const current = config();
+    const currentKey = String(current.anonKey || "");
+    const unsafe = currentKey.startsWith("sb_secret_") || currentKey.toLowerCase().includes("service_role");
+
+    if (!current.url || !current.anonKey || unsafe) {
+      originalSetItem.call(localStorage, CONFIG_KEY, JSON.stringify(DEFAULT_CLOUD_CONFIG));
+      return DEFAULT_CLOUD_CONFIG;
+    }
+    return current;
+  }
+
+  function deviceLabel() {
+    const saved = localStorage.getItem("dragonflyLotusDeviceLabel");
+    if (saved) return saved;
+    const ua = navigator.userAgent || "";
+    const platform = navigator.platform || "";
+    let label = "DragonFly device";
+    if (/iPhone/i.test(ua)) label = "Ren’s iPhone";
+    else if (/iPad/i.test(ua) || (platform === "MacIntel" && navigator.maxTouchPoints > 1)) label = "Ren’s iPad";
+    else if (/Mac/i.test(platform)) label = "Ren’s Mac";
+    originalSetItem.call(localStorage, "dragonflyLotusDeviceLabel", label);
+    return label;
+  }
+
+  function renderDeviceIdentity() {
+    const name = document.getElementById("cloudDeviceName");
+    const stateText = document.getElementById("cloudDeviceState");
+    if (name) name.textContent = deviceLabel();
+    if (stateText) {
+      stateText.textContent = state.user
+        ? (state.databaseReady ? "Connected and mirroring" : "Signed in — preparing mirror")
+        : "Ready for sign-in";
+    }
   }
 
   function meta() {
@@ -336,6 +376,7 @@
   }
 
   function renderAccount() {
+    queueMicrotask(renderDeviceIdentity);
     const label=document.getElementById("cloudAccountLabel");
     const detail=document.getElementById("cloudAccountDetail");
     const signOut=document.getElementById("cloudSignOutButton");
@@ -415,7 +456,7 @@
   }
 
   async function initializeClient() {
-    const saved = config();
+    const saved = ensureDefaultCloudConfig();
     const savedKey = String(saved.anonKey || "");
     const savedSecret =
       savedKey.startsWith("sb_secret_") ||
@@ -439,6 +480,7 @@
     const keyField = document.getElementById("cloudAnonKey");
     if (urlField) urlField.value = saved.url || "";
     if (keyField) keyField.value = saved.anonKey || "";
+    renderDeviceIdentity();
 
     if (!state.configured) {
       setStatus("Cloud not configured");
@@ -841,6 +883,7 @@
       configured: state.configured,
       signedIn: Boolean(state.user),
       email: state.user?.email || null,
+      device: deviceLabel(),
       databaseReady: state.databaseReady,
       syncing: state.syncing,
       lastError: state.lastError,

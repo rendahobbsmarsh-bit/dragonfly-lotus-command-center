@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V7.4 — Connected Intelligence",
+  "name": "DragonFly Lotus V8.0 — Zero Configuration Devices",
   "short_name": "DragonFly Lotus",
-  "description": "Stops the cloud synchronization reload loop while preserving live cross-device updates.",
+  "description": "Sign in on Mac, iPhone, and iPad without manually entering Supabase project details.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,4 +1,4 @@
-const CACHE_NAME = "dragonfly-lotus-v7-4-stop-reload-loop";
+const CACHE_NAME = "dragonfly-lotus-v8-0-zero-config-devices";
 const APP_SHELL = [
   "./",
   "./index.html",

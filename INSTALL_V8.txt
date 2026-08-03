@@ -1,0 +1,4 @@
+unzip -o DragonFly_Lotus_v8_0_Zero_Configuration_Devices.zip
+git add .
+git commit -m "DragonFly Lotus V8.0 - Zero configuration devices"
+git push

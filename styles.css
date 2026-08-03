@@ -940,3 +940,21 @@ body.workspace-log .workspace-nav {
 #connectedIntelligenceCard{border-color:rgba(83,197,190,.35);background:linear-gradient(145deg,rgba(83,197,190,.07),rgba(214,173,97,.035)),rgba(255,255,255,.02)}
 .cloud-auth-card.is-signed-in{border-color:rgba(83,197,190,.46);box-shadow:0 0 0 2px rgba(83,197,190,.07)}
 @media(max-width:620px){.cloud-auth-button-row{grid-template-columns:1fr}}
+
+
+/* V8.0 Zero Configuration Devices */
+.cloud-device-card {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(83,197,190,.34);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(83,197,190,.08), rgba(255,255,255,.02));
+  display: grid;
+  gap: .35rem;
+}
+.cloud-device-card strong { font-size: 1.1rem; }
+.cloud-device-card p { margin: 0; color: var(--muted); }
+.cloud-live-dot { color: var(--muted); font-size: .9rem; display: inline-flex; align-items: center; gap: .45rem; }
+.cloud-live-dot i { width: .55rem; height: .55rem; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px rgba(83,197,190,.65); }
+.developer-setup { opacity: .72; }
+.developer-setup[open] { opacity: 1; }

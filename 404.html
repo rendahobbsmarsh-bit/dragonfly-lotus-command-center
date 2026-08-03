@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#171424" name="theme-color"/>
-<title>DragonFly Lotus V7.4 — Stop Reload Loop</title>
+<title>DragonFly Lotus V8.0 — Zero Configuration Devices</title>
 <meta content="DragonFly Lotus V7 — secure email/password cloud mirroring and connected intelligence." name="description"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -22,7 +22,7 @@
 <h1>Command Center</h1>
 </div>
 <div aria-label="System status" class="system-status-strip" id="systemStatusStrip">
-<span class="version-chip">V7.4</span>
+<span class="version-chip">V8.0</span>
 <span class="system-status" id="saveStatus">Saved on this device</span>
 <span class="system-status" id="connectionStatus">Checking connection…</span>
 <span class="system-status cloud-header-status" id="cloudHeaderStatus">Cloud not connected</span></div><div class="clock-block">
@@ -593,10 +593,10 @@ Notes: SEA overnight"></textarea>
 <p>A safety backup is created before cloud data replaces local data.</p>
 </article>
 </div>
-<details class="cloud-setup" id="cloudSetupDetails" open="">
+<details class="cloud-setup developer-setup" id="cloudSetupDetails">
 <summary>Cloud setup</summary>
 <p class="intelligence-context">
-          Paste the Project URL and browser-safe publishable key from your Supabase project. These identify your project; the anon key is designed for browser apps and your private rows are protected by sign-in and Row Level Security.
+          DragonFly Lotus is already connected to Ren’s private cloud. Open this only for troubleshooting. These identify your project; the anon key is designed for browser apps and your private rows are protected by sign-in and Row Level Security.
         </p>
 <div class="form-grid cloud-config-grid">
 <label class="wide">Supabase Project URL
@@ -609,8 +609,13 @@ Notes: SEA overnight"></textarea>
 <button class="quiet-button" id="cloudClearConfigButton" type="button">Remove Configuration</button>
 </div>
 </details>
-<div class="cloud-auth-card v7-auth-card"><div><span class="intelligence-label">CAPTAIN REN ACCOUNT</span><h3>Create your private DragonFly login</h3><p>Use the same email and password on every device. DragonFly Lotus never stores the password itself.</p></div><div class="cloud-auth-actions"><label>Email<input autocomplete="email" id="cloudEmail" placeholder="you@example.com" type="email"/></label><label>Password<input autocomplete="current-password" id="cloudPassword" placeholder="At least 8 characters" type="password"/></label><div class="cloud-auth-button-row"><button id="cloudCreateAccountButton" type="button">Create Account</button><button class="quiet-button" id="cloudSignInButton" type="button">Sign In</button></div><button class="text-button" id="cloudForgotPasswordButton" type="button">Forgot password?</button><button class="quiet-button" hidden="" id="cloudSignOutButton" type="button">Sign Out</button></div><p class="cloud-message" id="cloudAuthMessage"></p></div>
-<div class="cloud-control-grid">
+<div class="cloud-auth-card v7-auth-card"><div><span class="intelligence-label">CAPTAIN REN ACCOUNT</span><h3>Sign in to your DragonFly Cloud</h3><p>Use the same email and password on your Mac, iPhone, and iPad. No project keys are needed on new devices.</p></div><div class="cloud-auth-actions"><label>Email<input autocomplete="email" id="cloudEmail" placeholder="you@example.com" type="email"/></label><label>Password<input autocomplete="current-password" id="cloudPassword" placeholder="At least 8 characters" type="password"/></label><div class="cloud-auth-button-row"><button id="cloudCreateAccountButton" type="button">Create Account</button><button class="quiet-button" id="cloudSignInButton" type="button">Sign In</button></div><button class="text-button" id="cloudForgotPasswordButton" type="button">Forgot password?</button><button class="quiet-button" hidden="" id="cloudSignOutButton" type="button">Sign Out</button></div><p class="cloud-message" id="cloudAuthMessage"></p></div>
+<div class="cloud-device-card" id="cloudDeviceCard">
+          <span class="intelligence-label">THIS DEVICE</span>
+          <strong id="cloudDeviceName">DragonFly device</strong>
+          <p id="cloudDeviceState">Ready for sign-in</p>
+          <span class="cloud-live-dot"><i></i> Live connection status</span>
+        </div><div class="cloud-control-grid">
 <article>
 <span class="intelligence-label">SYNC NOW</span>
 <strong>Manually compare this device with the cloud.</strong>
