@@ -1,0 +1,4 @@
+unzip -o DragonFly_Lotus_v8_1_Unified_Mirror_Execution.zip
+git add .
+git commit -m "DragonFly Lotus V8.1 - Unified mirror execution"
+git push

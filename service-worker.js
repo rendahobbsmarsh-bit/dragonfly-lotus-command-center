@@ -1,4 +1,4 @@
-const CACHE_NAME = "dragonfly-lotus-v8-0-zero-config-devices";
+const CACHE_NAME = "dragonfly-lotus-v8-1-unified-mirror-execution";
 const APP_SHELL = [
   "./",
   "./index.html",

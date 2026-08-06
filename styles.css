@@ -958,3 +958,20 @@ body.workspace-log .workspace-nav {
 .cloud-live-dot i { width: .55rem; height: .55rem; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px rgba(83,197,190,.65); }
 .developer-setup { opacity: .72; }
 .developer-setup[open] { opacity: 1; }
+
+
+/* V8.1 Unified Mirror Execution */
+.cloud-mirror-applied-notice {
+  margin: 0 0 1rem;
+  padding: .75rem 1rem;
+  border: 1px solid rgba(83, 197, 190, .22);
+  border-radius: 14px;
+  color: var(--muted);
+  background: rgba(83, 197, 190, .045);
+  transition: opacity .2s ease, border-color .2s ease, color .2s ease;
+}
+.cloud-mirror-applied-notice.is-visible {
+  color: var(--teal);
+  border-color: rgba(83, 197, 190, .6);
+  background: rgba(83, 197, 190, .1);
+}

@@ -1,7 +1,7 @@
 {
-  "name": "DragonFly Lotus V8.0 — Zero Configuration Devices",
+  "name": "DragonFly Lotus V8.1 — Unified Mirror Execution",
   "short_name": "DragonFly Lotus",
-  "description": "Sign in on Mac, iPhone, and iPad without manually entering Supabase project details.",
+  "description": "Mirrors Today, Flight Deck, Health, Money, Bliss, missions, and Captain’s Log and refreshes every workspace immediately when cloud data arrives.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

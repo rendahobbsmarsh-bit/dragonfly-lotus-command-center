@@ -24,6 +24,90 @@ function announceDragonflyDataChange(detail = {}) {
   window.dispatchEvent(new CustomEvent(DRAGONFLY_DATA_EVENT, { detail }));
 }
 
+function refreshAllDragonFlyViewsFromStorage() {
+  state = { ...defaults, ...readStorage(KEY, {}) };
+
+  try {
+    populateHealthFields(getSavedHealth());
+    updateHealthProgress(false);
+    renderHealth();
+  } catch (error) {
+    console.warn("Health view refresh skipped.", error);
+  }
+
+  try {
+    if (typeof render === "function") render();
+    if (typeof refreshSharedViews === "function") refreshSharedViews();
+  } catch (error) {
+    console.warn("Today view refresh skipped.", error);
+  }
+
+  try {
+    if (typeof loadFlightOperations === "function") {
+      flightOperations = loadFlightOperations();
+    }
+    if (typeof renderFlightOperations === "function") renderFlightOperations();
+    if (typeof updateFlightDeck === "function" && typeof intelligenceReadSnapshot === "function") {
+      updateFlightDeck(intelligenceReadSnapshot());
+    }
+  } catch (error) {
+    console.warn("Flight view refresh skipped.", error);
+  }
+
+  try {
+    renderCountdowns();
+  } catch (error) {
+    console.warn("Countdown refresh skipped.", error);
+  }
+
+  try {
+    updateDragonflyBlissStatus();
+  } catch (error) {
+    console.warn("Bliss refresh skipped.", error);
+  }
+
+  try {
+    missionItems = loadMissions();
+    renderMissionList();
+    updateNextMissionPanel();
+  } catch (error) {
+    console.warn("Mission refresh skipped.", error);
+  }
+
+  try {
+    journalEntries = loadJournalEntries();
+    if (typeof renderJournalHistory === "function") renderJournalHistory();
+    if (typeof journalAutomaticReview === "function") journalAutomaticReview();
+    if (typeof updateJournalMemoryRecall === "function") updateJournalMemoryRecall();
+  } catch (error) {
+    console.warn("Captain's Log refresh skipped.", error);
+  }
+
+  try {
+    if (typeof updateCaptainsBriefing === "function") updateCaptainsBriefing();
+    if (typeof updateCaptainRecommendations === "function") updateCaptainRecommendations();
+    if (typeof updateMorningIntelligence === "function") updateMorningIntelligence();
+    if (typeof updateV5Snapshot === "function") updateV5Snapshot();
+    if (typeof updateConnectedIntelligence === "function") updateConnectedIntelligence();
+  } catch (error) {
+    console.warn("Intelligence view refresh skipped.", error);
+  }
+
+  const mirrorNotice = document.getElementById("cloudMirrorAppliedNotice");
+  if (mirrorNotice) {
+    mirrorNotice.textContent = `Updated from cloud at ${new Date().toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit"
+    })}`;
+    mirrorNotice.classList.add("is-visible");
+    clearTimeout(refreshAllDragonFlyViewsFromStorage.noticeTimer);
+    refreshAllDragonFlyViewsFromStorage.noticeTimer = setTimeout(() => {
+      mirrorNotice.classList.remove("is-visible");
+    }, 5000);
+  }
+}
+
 function markHealthSaved(message = "Saved everywhere") {
   const status = document.getElementById("healthSaveStatus");
   if (!status) return;
@@ -1255,15 +1339,27 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 
 
 window.addEventListener(DRAGONFLY_DATA_EVENT, event => {
+  if (event.detail?.source === "cloud" || event.detail?.domain === "all") {
+    refreshAllDragonFlyViewsFromStorage();
+    return;
+  }
+
   if (event.detail?.domain === "health") {
     populateHealthFields(getSavedHealth());
     updateHealthProgress(false);
     renderHealth();
   }
+
   if (event.detail?.domain === "missions") {
     updateNextMissionPanel();
     if (typeof updateFlightDeck === "function") updateFlightDeck(intelligenceReadSnapshot());
   }
+
+  if (event.detail?.domain === "journal") {
+    journalEntries = loadJournalEntries();
+    if (typeof renderJournalHistory === "function") renderJournalHistory();
+  }
+
   if (typeof updateCaptainsBriefing === "function") updateCaptainsBriefing();
   if (typeof updateCaptainRecommendations === "function") updateCaptainRecommendations();
   if (typeof updateMorningIntelligence === "function") updateMorningIntelligence();
@@ -1277,7 +1373,9 @@ window.addEventListener("storage", event => {
     event.key === FLIGHT_OPERATIONS_KEY ||
     event.key === COUNTDOWN_STORAGE_KEY ||
     event.key === BLISS_STORAGE_KEY ||
-    event.key === MISSIONS_STORAGE_KEY
+    event.key === MISSIONS_STORAGE_KEY ||
+    event.key === JOURNAL_STORAGE_KEY ||
+    event.key === LEARNING_STORAGE_KEY
   ) {
     state = { ...defaults, ...readStorage(KEY, {}) };
     populateHealthFields(getSavedHealth());

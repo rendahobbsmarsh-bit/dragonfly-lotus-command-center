@@ -1,4 +1,4 @@
-/* DragonFly Lotus V8.0 — Zero Configuration Devices */
+/* DragonFly Lotus V8.1 — Unified Mirror Execution */
 (() => {
   "use strict";
 
@@ -12,6 +12,8 @@
   const BACKUP_KEY = "dragonflyLotusCloudSafetyBackup";
   const ACTIVE_WORKSPACE_KEY = "dragonflyLotusActiveWorkspace";
   const DATA_PREFIX = "dragonflyLotus";
+  const LEGACY_CORE_KEY = "dragonfly-lotus-v1";
+  const APP_DATA_EVENT = "dragonfly:datachange";
   const TABLE_NAME = "dragonfly_cloud_state";
   const DEVICE_ID_KEY = "dragonflyLotusDeviceId";
   const CLOUD_EVENT = "dragonfly-cloud-status";
@@ -116,8 +118,19 @@
 
   function isDragonFlyDataKey(key) {
     if (!key) return false;
-    if (key === CONFIG_KEY || key === META_KEY || key === LOG_KEY || key === BACKUP_KEY || key === DEVICE_ID_KEY) return false;
-    return key.startsWith(DATA_PREFIX) || key === ACTIVE_WORKSPACE_KEY;
+    if (
+      key === CONFIG_KEY ||
+      key === META_KEY ||
+      key === LOG_KEY ||
+      key === BACKUP_KEY ||
+      key === DEVICE_ID_KEY
+    ) return false;
+
+    return (
+      key === LEGACY_CORE_KEY ||
+      key.startsWith(DATA_PREFIX) ||
+      key === ACTIVE_WORKSPACE_KEY
+    );
   }
 
   function collectPayload() {
@@ -144,7 +157,18 @@
     if (!payload || typeof payload !== "object") return;
     createSafetyBackup("Before applying cloud data");
     state.applyingRemote = true;
+
     try {
+      const remoteKeys = new Set(Object.keys(payload));
+
+      // Remove stale shared records so deleted items also mirror.
+      for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+        const key = localStorage.key(index);
+        if (!isDragonFlyDataKey(key)) continue;
+        if (key === ACTIVE_WORKSPACE_KEY) continue;
+        if (!remoteKeys.has(key)) originalRemoveItem.call(localStorage, key);
+      }
+
       Object.entries(payload).forEach(([key, value]) => {
         if (!isDragonFlyDataKey(key)) return;
         originalSetItem.call(
@@ -153,6 +177,7 @@
           typeof value === "string" ? value : JSON.stringify(value)
         );
       });
+
       saveMeta({
         dirty: false,
         lastSyncedAt: new Date().toISOString(),
@@ -370,8 +395,8 @@
 
     // Tell the rest of DragonFly Lotus that shared data changed without
     // reloading the page and restarting the synchronization handshake.
-    window.dispatchEvent(new CustomEvent("dragonfly:data-changed", {
-      detail: { source: "cloud" }
+    window.dispatchEvent(new CustomEvent(APP_DATA_EVENT, {
+      detail: { source: "cloud", domain: "all" }
     }));
   }
 
@@ -723,7 +748,7 @@
       applyPayload(remote.payload, remote.updated_at);
       state.databaseReady = true;
       setCloudState("connected");
-      setAuthMessage("Signed in. DragonFly Cloud is connected.", "success");
+      setAuthMessage("Signed in. Cloud data has been applied to this device.", "success");
       addLog(`${reason}: cloud copy restored to this device.`);
       refreshAfterCloudApply();
     } catch (error) {
@@ -846,7 +871,8 @@
       addLog("Offline mode active. Changes will wait on this device.");
     });
 
-    window.addEventListener("dragonfly-data-change", () => {
+    window.addEventListener(APP_DATA_EVENT, event => {
+      if (event.detail?.source === "cloud") return;
       saveMeta({ dirty: true, localChangedAt: new Date().toISOString() });
       schedulePush();
     });
